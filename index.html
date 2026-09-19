@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Studio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Poppins', 'sans-serif'],
+                        arabic: ['Amiri', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fdf8f6',
+                            100: '#f2e8e5',
+                            500: '#B38A4A', // Default Gold
+                            900: '#4A3825',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #F8F7F4; color: #1F2937; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-arabic { font-family: 'Amiri', serif; }
+        
+        .view-section { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .view-section.active { display: block; opacity: 1; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Loader */
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #B38A4A; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Toast */
+        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { background: #1F2937; color: white; padding: 10px 20px; border-radius: 8px; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); animation: slideUp 0.3s ease forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Template Specific Base Styles */
+        .template-card { position: relative; width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; background-size: cover; background-position: center; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-btn.active { border-bottom: 2px solid #B38A4A; color: #B38A4A; font-weight: 500; }
+    </style>
+</head>
+<body class="antialiased h-screen w-screen overflow-hidden flex flex-col">
+
+    <!-- Global Loader Overlay -->
+    <div id="global-loader" class="fixed inset-0 bg-white/90 z-[100] flex flex-col items-center justify-center hidden backdrop-blur-sm transition-opacity">
+        <div class="loader w-12 h-12 border-4 mb-4"></div>
+        <p class="text-gray-600 font-medium tracking-wide">Please wait...</p>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- 1. LOGIN VIEW -->
+    <div id="view-login" class="view-section h-full w-full bg-[url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center relative">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        <div class="relative z-10 h-full flex flex-col items-center justify-center px-4">
+            <div class="max-w-md w-full bg-white/95 backdrop-blur p-10 rounded-3xl shadow-2xl text-center border border-white/20">
+                <div class="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                    <i class="fa-solid fa-rings-wedding text-4xl text-brand-500"></i>
+                </div>
+                <h1 class="text-4xl font-serif font-bold text-gray-900 mb-2">Wedding Studio</h1>
+                <p class="text-gray-500 mb-10 text-sm">Create your perfect digital invitation</p>
+                
+                <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-800 py-3.5 px-4 rounded-xl hover:bg-gray-50 hover:shadow-md transition font-medium">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                    Continue with Google
+                </button>
+                <p class="mt-6 text-xs text-gray-400">Your invitations, your private workspace.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. DASHBOARD VIEW -->
+    <div id="view-dashboard" class="view-section h-full w-full bg-[#F8F7F4] flex flex-col overflow-y-auto">
+        <nav class="bg-white sticky top-0 z-40 border-b border-gray-200 shadow-sm">
+            <div class="max-w-6xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+                <div class="font-serif font-bold text-xl text-brand-900 flex items-center gap-2">
+                    <i class="fa-solid fa-rings-wedding text-brand-500"></i> Studio
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <img id="user-avatar" src="" class="w-8 h-8 rounded-full bg-gray-200 hidden" alt="Avatar">
+                        <span id="user-name" class="font-medium text-sm hidden sm:block text-gray-700"></span>
+                    </div>
+                    <button id="btn-logout" class="text-gray-400 hover:text-red-500 transition p-2" title="Logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-6xl mx-auto px-4 md:px-8 py-8 w-full flex-grow">
+            <!-- Stats Bar -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                    <h2 class="text-2xl font-serif font-bold text-gray-900" id="dash-greeting">Good evening!</h2>
+                    <p class="text-gray-500 text-sm mt-1">Manage your elegant invitations.</p>
+                </div>
+                <button onclick="createNewInvitation()" class="w-full md:w-auto bg-brand-500 hover:bg-brand-900 text-white px-6 py-3 rounded-xl shadow-md font-medium transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Create Invitation
+                </button>
+            </div>
+
+            <div class="flex justify-between items-end mb-6">
+                <h3 class="text-lg font-bold text-gray-800">My Invitations</h3>
+            </div>
+
+            <div id="invitations-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards injected here -->
+            </div>
+            
+            <div id="empty-state" class="hidden text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100 border-dashed">
+                <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-500 text-2xl">
+                    <i class="fa-regular fa-envelope-open"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">No invitations yet</h3>
+                <p class="text-gray-500 mb-6 text-sm">Create your first beautiful wedding invitation.</p>
+                <button onclick="createNewInvitation()" class="text-brand-500 font-medium hover:underline">Start Creating</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- 3. EDITOR VIEW -->
+    <div id="view-editor" class="view-section h-full w-full bg-gray-50 flex flex-col">
+        <!-- Editor Nav -->
+        <nav class="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-4 shrink-0 shadow-sm z-20">
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.hash='#dashboard'" class="text-gray-500 hover:text-gray-900 text-sm font-medium"><i class="fa-solid fa-arrow-left mr-2"></i>Back</button>
+                <div class="h-4 w-px bg-gray-300"></div>
+                <div class="text-xs text-gray-400 font-mono" id="editor-code-badge"></div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="save-status" class="text-xs text-gray-400 flex items-center transition-opacity opacity-0"><i class="fa-solid fa-check text-green-500 mr-1"></i>Saved</span>
+                
+                <!-- Status Toggle -->
+                <div class="flex items-center gap-2 bg-gray-100 rounded-lg px-2 py-1">
+                    <span id="publish-status-text" class="text-xs font-medium text-gray-600">Draft</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-publish" class="sr-only peer" onchange="togglePublishStatus(this)">
+                        <div class="w-8 h-4 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-500"></div>
+                    </label>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Editor Workspace -->
+        <div class="flex-grow flex flex-col-reverse lg:flex-row overflow-hidden">
+            
+            <!-- Controls Panel (Left on Desktop, Bottom on Mobile) -->
+            <div class="w-full lg:w-[400px] bg-white border-r border-gray-200 flex flex-col h-[50vh] lg:h-full shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] lg:shadow-none z-10">
+                
+                <!-- Tabs -->
+                <div class="flex overflow-x-auto hide-scrollbar border-b border-gray-100 px-2 shrink-0 bg-white">
+                    <button class="tab-btn active px-4 py-3 text-sm text-gray-500 whitespace-nowrap" onclick="switchTab('tab-template')"><i class="fa-solid fa-layer-group mr-1.5"></i>Template</button>
+                    <button class="tab-btn px-4 py-3 text-sm text-gray-500 whitespace-nowrap" onclick="switchTab('tab-content')"><i class="fa-solid fa-pen-nib mr-1.5"></i>Content</button>
+                    <button class="tab-btn px-4 py-3 text-sm text-gray-500 whitespace-nowrap" onclick="switchTab('tab-events')"><i class="fa-regular fa-calendar mr-1.5"></i>Events</button>
+                    <button class="tab-btn px-4 py-3 text-sm text-gray-500 whitespace-nowrap" onclick="switchTab('tab-design')"><i class="fa-solid fa-palette mr-1.5"></i>Design</button>
+                    <button class="tab-btn px-4 py-3 text-sm text-gray-500 whitespace-nowrap" onclick="switchTab('tab-photos')"><i class="fa-regular fa-image mr-1.5"></i>Photos</button>
+                </div>
+
+                <!-- Tab Contents -->
+                <div class="flex-grow overflow-y-auto p-5 space-y-6">
+                    
+                    <!-- TEMPLATE TAB -->
+                    <div id="tab-template" class="tab-content active">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider">Choose Theme</h3>
+                        <div class="grid grid-cols-2 gap-3" id="template-list-container">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+
+                    <!-- CONTENT TAB -->
+                    <div id="tab-content" class="tab-content">
+                        <div class="space-y-5">
+                            <div>
+                                <h3 class="text-xs font-bold text-brand-500 mb-2 uppercase tracking-wider">Couple Details</h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-xs text-gray-500 mb-1">Groom's Name</label>
+                                    <input type="text" id="ed-groom" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition" oninput="handleEditorInput()"></div>
+                                    <div><label class="block text-xs text-gray-500 mb-1">Bride's Name</label>
+                                    <input type="text" id="ed-bride" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition" oninput="handleEditorInput()"></div>
+                                </div>
+                            </div>
+                            
+                            <hr class="border-gray-100">
+                            
+                            <div>
+                                <h3 class="text-xs font-bold text-brand-500 mb-2 uppercase tracking-wider">Text & Message</h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-xs text-gray-500 mb-1">Heading</label>
+                                    <input type="text" id="ed-heading" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" oninput="handleEditorInput()"></div>
+                                    <div><label class="block text-xs text-gray-500 mb-1">Invitation Message</label>
+                                    <textarea id="ed-message" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none resize-none" oninput="handleEditorInput()"></textarea></div>
+                                </div>
+                            </div>
+
+                            <hr class="border-gray-100">
+
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <h3 class="text-xs font-bold text-brand-500 uppercase tracking-wider">Quranic / Quote</h3>
+                                    <label class="inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="ed-show-quote" class="sr-only peer" onchange="handleEditorInput()">
+                                        <div class="w-7 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-500"></div>
+                                    </label>
+                                </div>
+                                <div class="space-y-3" id="quote-fields">
+                                    <div><label class="block text-xs text-gray-500 mb-1">Arabic Text</label>
+                                    <input type="text" id="ed-arabic" class="w-full font-arabic bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right outline-none" oninput="handleEditorInput()"></div>
+                                    <div><label class="block text-xs text-gray-500 mb-1">Translation</label>
+                                    <input type="text" id="ed-translation" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none" oninput="handleEditorInput()"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EVENTS TAB -->
+                    <div id="tab-events" class="tab-content">
+                         <div class="space-y-6">
+                            <div>
+                                <h3 class="text-xs font-bold text-brand-500 mb-3 uppercase tracking-wider bg-brand-50 inline-block px-2 py-1 rounded">Main Event</h3>
+                                <div class="space-y-3">
+                                    <div><label class="block text-xs text-gray-500 mb-1">Event Title</label>
+                                    <input type="text" id="ed-me-title" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" placeholder="e.g. Wedding Ceremony" oninput="handleEditorInput()"></div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div><label class="block text-xs text-gray-500 mb-1">Date</label>
+                                        <input type="text" id="ed-me-date" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" placeholder="20 Sept 2026" oninput="handleEditorInput()"></div>
+                                        <div><label class="block text-xs text-gray-500 mb-1">Time</label>
+                                        <input type="text" id="ed-me-time" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" placeholder="11:00 AM" oninput="handleEditorInput()"></div>
+                                    </div>
+                                    <div><label class="block text-xs text-gray-500 mb-1">Venue Name</label>
+                                    <input type="text" id="ed-me-venue" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" oninput="handleEditorInput()"></div>
+                                    <div><label class="block text-xs text-gray-500 mb-1">Address</label>
+                                    <input type="text" id="ed-me-address" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" oninput="handleEditorInput()"></div>
+                                    <div><label class="block text-xs text-gray-500 mb-1">Map URL</label>
+                                    <input type="url" id="ed-me-map" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none" placeholder="https://maps.google.com/..." oninput="handleEditorInput()"></div>
+                                </div>
+                            </div>
+                            
+                            <hr class="border-gray-200 border-dashed">
+
+                            <div>
+                                <div class="flex justify-between items-center mb-3">
+                                    <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider">Extra Events</h3>
+                                    <span id="extra-events-counter" class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">0/5</span>
+                                </div>
+                                <div id="extra-events-container" class="space-y-3 mb-3">
+                                    <!-- Dynamic Extra Events -->
+                                </div>
+                                <button id="btn-add-event" onclick="addExtraEvent()" class="w-full border-2 border-dashed border-brand-200 text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-lg py-2.5 text-sm font-medium transition flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-plus"></i> Add Event
+                                </button>
+                                <p id="max-events-msg" class="text-[10px] text-center text-orange-500 mt-2 hidden">Maximum 5 extra events allowed.</p>
+                            </div>
+                         </div>
+                    </div>
+
+                    <!-- DESIGN TAB -->
+                    <div id="tab-design" class="tab-content">
+                        <div class="space-y-5">
+                            <div>
+                                <h3 class="text-xs font-bold text-brand-500 mb-2 uppercase tracking-wider">Colors</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Primary Color</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" id="ed-color-primary" class="w-8 h-8 rounded cursor-pointer border border-gray-200 p-0.5" onchange="handleEditorInput()">
+                                            <span class="text-xs text-gray-400 font-mono" id="lbl-color-primary"></span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Background Color</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" id="ed-color-bg" class="w-8 h-8 rounded cursor-pointer border border-gray-200 p-0.5" onchange="handleEditorInput()">
+                                            <span class="text-xs text-gray-400 font-mono" id="lbl-color-bg"></span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">Text Color</label>
+                                        <div class="flex items-center gap-2">
+                                            <input type="color" id="ed-color-text" class="w-8 h-8 rounded cursor-pointer border border-gray-200 p-0.5" onchange="handleEditorInput()">
+                                            <span class="text-xs text-gray-400 font-mono" id="lbl-color-text"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr class="border-gray-100">
+
+                            <div>
+                                <h3 class="text-xs font-bold text-brand-500 mb-2 uppercase tracking-wider">Typography</h3>
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">Heading Font</label>
+                                    <select id="ed-font-heading" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" onchange="handleEditorInput()">
+                                        <option value="'Playfair Display', serif">Playfair Display (Serif)</option>
+                                        <option value="'Cinzel', serif">Cinzel (Elegant)</option>
+                                        <option value="'Great Vibes', cursive">Great Vibes (Script)</option>
+                                        <option value="'Montserrat', sans-serif">Montserrat (Modern)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <hr class="border-gray-100">
+
+                            <div>
+                                <h3 class="text-xs font-bold text-brand-500 mb-2 uppercase tracking-wider">Features</h3>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                        <input type="checkbox" id="ed-show-bismillah" class="rounded text-brand-500 focus:ring-brand-500" onchange="handleEditorInput()"> Show Bismillah
+                                    </label>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                                        <input type="checkbox" id="ed-show-qr" class="rounded text-brand-500 focus:ring-brand-500" onchange="handleEditorInput()"> Show QR Code (Map)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PHOTOS TAB -->
+                    <div id="tab-photos" class="tab-content">
+                        <div class="space-y-4">
+                            <p class="text-xs text-gray-500 mb-4">Upload photos if your selected template supports them. (Square 1:1 recommended)</p>
+                            
+                            <!-- Groom Photo -->
+                            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200">
+                                        <img id="prev-groom-photo" src="" class="w-full h-full object-cover hidden">
+                                        <i class="fa-solid fa-user text-gray-400" id="icon-groom-photo"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-800">Groom Photo</p>
+                                        <p class="text-[10px] text-gray-400">JPG, PNG (Max 2MB)</p>
+                                    </div>
+                                </div>
+                                <label class="cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-1.5 rounded border border-gray-200 text-xs font-medium transition">
+                                    Upload
+                                    <input type="file" class="hidden" accept="image/jpeg, image/png" onchange="handleImageUpload(this, 'groomPhoto')">
+                                </label>
+                            </div>
+
+                            <!-- Bride Photo -->
+                            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200">
+                                        <img id="prev-bride-photo" src="" class="w-full h-full object-cover hidden">
+                                        <i class="fa-solid fa-user text-gray-400" id="icon-bride-photo"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-800">Bride Photo</p>
+                                        <p class="text-[10px] text-gray-400">JPG, PNG (Max 2MB)</p>
+                                    </div>
+                                </div>
+                                <label class="cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-1.5 rounded border border-gray-200 text-xs font-medium transition">
+                                    Upload
+                                    <input type="file" class="hidden" accept="image/jpeg, image/png" onchange="handleImageUpload(this, 'bridePhoto')">
+                                </label>
+                            </div>
+
+                        </div>
+                        <div class="mt-8 pt-4 border-t border-gray-200 text-center">
+                            <button onclick="deleteInvitation()" class="text-red-500 hover:text-red-700 text-sm font-medium transition"><i class="fa-solid fa-trash mr-1"></i> Delete this Invitation</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Live Preview Panel (Right on Desktop, Top on Mobile) -->
+            <div class="flex-grow bg-gray-200/60 relative flex flex-col items-center justify-center h-[50vh] lg:h-full p-4 overflow-hidden">
+                <div class="absolute top-4 right-4 z-10 flex gap-2">
+                    <button onclick="zoomPreview(0.1)" class="w-8 h-8 bg-white rounded shadow-sm text-gray-600 hover:text-brand-500"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                    <button onclick="zoomPreview(-0.1)" class="w-8 h-8 bg-white rounded shadow-sm text-gray-600 hover:text-brand-500"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                </div>
+                
+                <!-- Phone Mockup Container -->
+                <div id="preview-container" class="w-[360px] h-[700px] max-h-full bg-white shadow-2xl rounded-3xl overflow-hidden border-[6px] border-gray-800 relative transition-transform duration-300 origin-top">
+                    <!-- RENDERER INJECTS HTML HERE -->
+                    <div id="renderer-output-editor" class="w-full h-full relative"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. PUBLIC INVITATION VIEW -->
+    <div id="view-public" class="view-section h-full w-full bg-black flex flex-col items-center overflow-y-auto">
+        <!-- Rendered Card container. Scales to fit mobile nicely, stays centered on desktop -->
+        <div class="w-full max-w-[450px] min-h-screen bg-white relative flex flex-col shadow-2xl mx-auto">
+            
+            <div class="flex-grow relative">
+                <!-- RENDERER INJECTS PUBLIC HTML HERE -->
+                <div id="renderer-output-public" class="w-full h-full relative min-h-screen"></div>
+            </div>
+
+            <!-- Public Action Bar (Sticky Bottom) -->
+            <div id="public-action-bar" class="sticky bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-100 p-4 pb-6 flex gap-3 z-50 rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                <button onclick="publicShareWhatsApp()" class="flex-1 bg-[#25D366] text-white py-3 rounded-xl font-semibold shadow-sm hover:bg-[#20bd5a] transition flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp
+                </button>
+                <button onclick="publicCopyLink()" class="flex-1 bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold shadow-sm hover:bg-gray-200 transition flex items-center justify-center gap-2">
+                    <i class="fa-regular fa-copy text-lg"></i> Copy Link
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. ERROR VIEW -->
+    <div id="view-error" class="view-section h-full w-full flex items-center justify-center bg-gray-50">
+        <div class="text-center p-8 bg-white rounded-2xl shadow-sm border border-gray-100 max-w-md w-full mx-4">
+            <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-link-slash text-2xl text-red-400"></i>
+            </div>
+            <h1 class="text-2xl font-serif font-bold text-gray-900 mb-2">Unavailable</h1>
+            <p class="text-gray-500 mb-6 text-sm">This invitation link is invalid or has been unpublished by the creator.</p>
+            <button onclick="window.location.hash='#/'" class="bg-gray-900 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-gray-800 transition">Go Home</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase v10 Modular SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+
+        /* 
+        ========================================================================
+        ⚠️ FIREBASE CONFIGURATION
+        ========================================================================
+        */
+        const firebaseConfig = {
+            apiKey: "AIzaSyCp-NKbL_kmB2nzlTv9fSisc2cVuE55p-Q",
+            authDomain: "online-angadi-003.firebaseapp.com",
+            projectId: "online-angadi-003",
+            storageBucket: "online-angadi-003.firebasestorage.app",
+            messagingSenderId: "873906876645",
+            appId: "1:873906876645:web:a730abef1e07da515f640c",
+            measurementId: "G-GH1DZXR5ZP"
+        };
+
+        /* 
+        ========================================================================
+        ⚠️ FIRESTORE SECURITY RULES (Apply in Firebase Console)
+        ========================================================================
+        rules_version = '2';
+        service cloud.firestore {
+          match /databases/{database}/documents {
+            match /invitations/{inviteId} {
+              // Create: Must assign oneself as owner
+              allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+              // Update/Delete: Only owner
+              allow update, delete: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+              // Read: Owner OR if published
+              allow read: if (request.auth != null && resource.data.ownerUid == request.auth.uid) || resource.data.status == 'published';
+            }
+          }
+        }
+        
+        ⚠️ STORAGE SECURITY RULES (Apply in Firebase Console)
+        ========================================================================
+        rules_version = '2';
+        service firebase.storage {
+          match /b/{bucket}/o {
+            match /users/{userId}/invitations/{inviteId}/{fileName} {
+              allow write: if request.auth != null && request.auth.uid == userId;
+              allow read: if true; // Public can see the images
+            }
+          }
+        }
+        */
+
+        let app, auth, db, storage;
+        let currentUser = null;
+        
+        // App State
+        const state = {
+            editingId: null,
+            data: null, // Current invitation data
+            saveTimeout: null,
+            previewZoom: 1
+        };
+
+        // Initialize Firebase (wrapped in try-catch to allow UI rendering even if config is missing during dev)
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            storage = getStorage(app);
+        } catch (e) {
+            console.error("Firebase init failed (missing config):", e);
+            showToast("Firebase Config Missing. App will not function fully.", "error");
+        }
+
+        /* ==========================================
+           TEMPLATE ENGINE
+           Defines layout and defaults for themes.
+           ========================================== */
+        const TEMPLATES = {
+            'islamic-gold': {
+                id: 'islamic-gold',
+                name: 'Islamic Gold',
+                thumb: 'https://images.unsplash.com/photo-1576506295286-5cda18df43e0?q=80&w=300&auto=format&fit=crop',
+                defaults: {
+                    colors: { primary: '#B38A4A', bg: '#FFF9F0', text: '#1F2937' },
+                    fonts: { heading: "'Playfair Display', serif" }
+                }
+            },
+            'minimal-floral': {
+                id: 'minimal-floral',
+                name: 'Minimal Floral',
+                thumb: 'https://images.unsplash.com/photo-1523688881242-6e2a8656a894?q=80&w=300&auto=format&fit=crop',
+                defaults: {
+                    colors: { primary: '#6B8E23', bg: '#FFFFFF', text: '#2d3748' },
+                    fonts: { heading: "'Montserrat', sans-serif" }
+                }
+            },
+            'royal-blue': {
+                id: 'royal-blue',
+                name: 'Royal Elegance',
+                thumb: 'https://images.unsplash.com/photo-1549469502-c8de9359e192?q=80&w=300&auto=format&fit=crop',
+                defaults: {
+                    colors: { primary: '#1E3A8A', bg: '#F8FAFC', text: '#0F172A' },
+                    fonts: { heading: "'Cinzel', serif" }
+                }
+            }
+        };
+
+        // Core Renderer Function - Converts JSON data to HTML
+        function renderCardHTML(data) {
+            if(!data) return '';
+            
+            const t = TEMPLATES[data.templateId] || TEMPLATES['islamic-gold'];
+            
+            // Merge defaults with user overrides
+            const design = {
+                primary: data.design?.colors?.primary || t.defaults.colors.primary,
+                bg: data.design?.colors?.bg || t.defaults.colors.bg,
+                text: data.design?.colors?.text || t.defaults.colors.text,
+                fontHeading: data.design?.fonts?.heading || t.defaults.fonts.heading
+            };
+            
+            const settings = data.settings || {};
+            const couple = data.couple || {};
+            const c = data.content || {};
+            const me = data.mainEvent || {};
+            const ex = data.extraEvents || [];
+
+            // Helper to generate dynamic styles
+            const customStyles = `
+                --primary: ${design.primary};
+                --bg: ${design.bg};
+                --text: ${design.text};
+                font-family: 'Poppins', sans-serif;
+                background-color: var(--bg);
+                color: var(--text);
+            `;
+
+            // HTML Construction
+            let html = `<div class="template-card relative p-8 flex flex-col items-center text-center transition-all duration-500" style="${customStyles}">`;
+            
+            // Border Overlay
+            html += `<div class="absolute inset-4 border-2 rounded-2xl pointer-events-none z-0 opacity-40" style="border-color: var(--primary);"></div>`;
+            
+            // Content Wrapper
+            html += `<div class="relative z-10 w-full flex flex-col items-center min-h-[90%] my-auto py-8">`;
+
+            // Bismillah
+            if(settings.showBismillah) {
+                html += `<div class="font-arabic text-3xl mb-8" style="color: var(--primary)">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>`;
+            }
+
+            // Heading
+            if(c.heading) {
+                html += `<div class="text-[10px] uppercase tracking-[0.3em] mb-8 font-semibold opacity-70">${c.heading}</div>`;
+            }
+
+            // Couple Names
+            html += `
+                <h1 class="text-4xl font-bold mb-3" style="font-family: ${design.fontHeading}; color: var(--primary)">${couple.groom || 'Groom Name'}</h1>
+                <span class="text-xl italic font-serif opacity-60 my-2">&</span>
+                <h1 class="text-4xl font-bold mt-3 mb-10" style="font-family: ${design.fontHeading}; color: var(--primary)">${couple.bride || 'Bride Name'}</h1>
+            `;
+
+            // Message
+            if(c.message) {
+                html += `<p class="text-sm leading-relaxed mb-8 px-4 opacity-80 whitespace-pre-line">${c.message}</p>`;
+            }
+
+            // Quran Quote
+            if(settings.showQuote && c.arabicText) {
+                html += `
+                    <div class="my-8 py-6 border-y border-opacity-20 w-3/4 mx-auto" style="border-color: var(--primary)">
+                        <p class="font-arabic text-2xl mb-3" style="color: var(--primary)">${c.arabicText}</p>
+                        ${c.translation ? `<p class="text-[10px] uppercase tracking-wider opacity-60">${c.translation}</p>` : ''}
+                    </div>
+                `;
+            }
+
+            // Main Event
+            html += `
+                <div class="bg-white/40 backdrop-blur-sm rounded-xl p-6 w-full max-w-sm mb-8 shadow-sm border border-black/5">
+                    <h3 class="text-[11px] font-bold uppercase tracking-widest mb-4" style="color: var(--primary)">${me.title || 'Main Event'}</h3>
+                    <div class="font-medium text-lg mb-1">${me.date || 'Date'}</div>
+                    <div class="text-sm opacity-80 mb-4">${me.time || 'Time'}</div>
+                    <div class="font-semibold">${me.venue || 'Venue'}</div>
+                    <div class="text-xs opacity-70 mt-1 mb-4">${me.address || 'Address'}</div>
+                    ${(settings.showMap && me.mapUrl) ? `
+                        <a href="${me.mapUrl}" target="_blank" class="inline-block text-[10px] uppercase tracking-wider font-bold border px-4 py-2 rounded-full hover:bg-black/5 transition" style="border-color: var(--primary); color: var(--primary)">
+                            <i class="fa-solid fa-location-dot mr-1"></i> Get Directions
+                        </a>
+                    ` : ''}
+                </div>
+            `;
+
+            // Extra Events
+            if(ex.length > 0) {
+                html += `<div class="w-full max-w-sm space-y-4 mb-10">`;
+                ex.forEach(ev => {
+                    html += `
+                        <div class="border-l-2 pl-4 text-left py-1 opacity-90" style="border-color: var(--primary)">
+                            <h4 class="text-sm font-bold">${ev.name}</h4>
+                            <p class="text-[11px] mt-1">${ev.date} | ${ev.time}</p>
+                            <p class="text-[11px] font-medium">${ev.venue}</p>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Photo Rendering (If URLs exist)
+            if(couple.groomPhoto || couple.bridePhoto) {
+                 html += `<div class="flex gap-4 mb-8 justify-center w-full">`;
+                 if(couple.groomPhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-4 bg-gray-100 shadow-md" style="border-color: var(--primary)"><img src="${couple.groomPhoto}" class="w-full h-full object-cover"></div>`;
+                 if(couple.bridePhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-4 bg-gray-100 shadow-md" style="border-color: var(--primary)"><img src="${couple.bridePhoto}" class="w-full h-full object-cover"></div>`;
+                 html += `</div>`;
+            }
+
+            html += `</div></div>`; // Close content wrapper and card
+            return html;
+        }
+
+        /* ==========================================
+           ROUTING & VIEW MANAGEMENT
+           ========================================== */
+        function handleRoute() {
+            const hash = window.location.hash || '#/';
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+
+            if (hash === '#/') {
+                if (currentUser) window.location.hash = '#dashboard';
+                else document.getElementById('view-login').classList.add('active');
+            } 
+            else if (hash === '#dashboard') {
+                if (!currentUser) window.location.hash = '#/';
+                else {
+                    document.getElementById('view-dashboard').classList.add('active');
+                    loadDashboard();
+                }
+            } 
+            else if (hash.startsWith('#editor/')) {
+                if (!currentUser) window.location.hash = '#/';
+                else {
+                    state.editingId = hash.replace('#editor/', '');
+                    document.getElementById('view-editor').classList.add('active');
+                    loadEditor();
+                }
+            }
+            else if (hash.startsWith('#/i/')) {
+                // Public Viewer: URL Format -> yourdomain.com/#/i/A7kP2
+                const code = hash.replace('#/i/', '');
+                document.getElementById('view-public').classList.add('active');
+                loadPublicInvitation(code);
+            }
+            else {
+                document.getElementById('view-error').classList.add('active');
+            }
+        }
+
+        window.addEventListener('hashchange', handleRoute);
+
+        /* ==========================================
+           AUTH LOGIC
+           ========================================== */
+        if(auth) {
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (user) {
+                    document.getElementById('user-name').innerText = user.displayName.split(' ')[0];
+                    document.getElementById('dash-greeting').innerText = `Hello, ${user.displayName.split(' ')[0]}`;
+                    if(user.photoURL) {
+                        const img = document.getElementById('user-avatar');
+                        img.src = user.photoURL;
+                        img.classList.remove('hidden');
+                    }
+                }
+                handleRoute();
+            });
+        }
+
+        document.getElementById('btn-google-login')?.addEventListener('click', async () => {
+            try {
+                showLoader();
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider);
+                // Hash change will handle routing
+            } catch(e) {
+                showToast("Login failed. Check console.", "error");
+                console.error(e);
+            } finally { hideLoader(); }
+        });
+
+        document.getElementById('btn-logout')?.addEventListener('click', () => {
+            signOut(auth).then(() => window.location.hash = '#/');
+        });
+
+        /* ==========================================
+           DASHBOARD LOGIC
+           ========================================== */
+        async function loadDashboard() {
+            showLoader();
+            try {
+                const q = query(collection(db, "invitations"), where("ownerUid", "==", currentUser.uid));
+                const snap = await getDocs(q);
+                
+                const list = document.getElementById('invitations-list');
+                const empty = document.getElementById('empty-state');
+                list.innerHTML = '';
+
+                if (snap.empty) {
+                    empty.classList.remove('hidden');
+                    list.classList.add('hidden');
+                } else {
+                    empty.classList.add('hidden');
+                    list.classList.remove('hidden');
+                    
+                    snap.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        const id = docSnap.id;
+                        const t = TEMPLATES[data.templateId] || TEMPLATES['islamic-gold'];
+                        const isPub = data.status === 'published';
+                        
+                        const card = document.createElement('div');
+                        card.className = "bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition group";
+                        card.innerHTML = `
+                            <div class="h-32 bg-gray-100 relative overflow-hidden bg-cover bg-center" style="background-image: url('${t.thumb}')">
+                                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition"></div>
+                                <div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold uppercase shadow-sm ${isPub ? 'text-green-600' : 'text-gray-500'}">
+                                    ${isPub ? '● Live' : 'Draft'}
+                                </div>
+                            </div>
+                            <div class="p-4 flex-grow flex flex-col">
+                                <h3 class="font-serif font-bold text-lg text-gray-900 truncate">${data.couple?.groom || 'Groom'} & ${data.couple?.bride || 'Bride'}</h3>
+                                <p class="text-xs text-gray-500 mt-1 mb-4 flex items-center gap-1"><i class="fa-solid fa-link text-[10px]"></i> /i/${id}</p>
+                                
+                                <div class="mt-auto grid grid-cols-2 gap-2 pt-3 border-t border-gray-50">
+                                    <a href="#editor/${id}" class="text-center bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 rounded-lg text-xs font-semibold transition">Edit</a>
+                                    ${isPub ? 
+                                    `<a href="#/i/${id}" target="_blank" class="text-center bg-brand-50 hover:bg-brand-100 text-brand-600 py-2 rounded-lg text-xs font-semibold transition">View</a>` 
+                                    : `<button disabled class="text-center bg-gray-50 text-gray-400 py-2 rounded-lg text-xs font-semibold opacity-50 cursor-not-allowed">View</button>`}
+                                </div>
+                            </div>
+                        `;
+                        list.appendChild(card);
+                    });
+                }
+            } catch (e) {
+                console.error("Dashboard error:", e);
+                showToast("Error loading invitations", "error");
+            }
+            hideLoader();
+        }
+
+        // GENERATE UNIQUE 5 CHAR CODE
+        function generateSecureCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            const array = new Uint32Array(5);
+            window.crypto.getRandomValues(array);
+            let result = '';
+            for (let i = 0; i < 5; i++) {
+                result += chars[array[i] % chars.length];
+            }
+            return result;
+        }
+
+        window.createNewInvitation = async function() {
+            showLoader();
+            try {
+                let code = '';
+                let isUnique = false;
+                
+                // Collision avoidance
+                while(!isUnique) {
+                    code = generateSecureCode();
+                    const docSnap = await getDoc(doc(db, "invitations", code));
+                    if (!docSnap.exists()) isUnique = true;
+                }
+
+                // Initial Data Structure
+                const initData = {
+                    ownerUid: currentUser.uid,
+                    code: code,
+                    status: 'draft',
+                    templateId: 'islamic-gold',
+                    couple: { groom: '', bride: '', groomPhoto: null, bridePhoto: null },
+                    mainEvent: { title: 'Nikah Ceremony', date: '', time: '', venue: '', address: '', mapUrl: '' },
+                    extraEvents: [],
+                    content: { heading: 'We cordially invite you', message: 'to join us on our special day\nand bless our new beginning.', arabicText: 'وَخَلَقْنَاكُمْ أَزْوَاجًا', translation: '"And We created you in pairs."' },
+                    design: { colors: {}, fonts: {} }, // Empty uses template defaults
+                    settings: { showBismillah: true, showQuote: true, showMap: true },
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                };
+
+                await setDoc(doc(db, "invitations", code), initData);
+                window.location.hash = `#editor/${code}`;
+            } catch (error) {
+                console.error(error);
+                showToast("Failed to create invitation", "error");
+            }
+            hideLoader();
+        }
+
+        /* ==========================================
+           EDITOR LOGIC
+           ========================================== */
+        async function loadEditor() {
+            showLoader();
+            try {
+                const docRef = doc(db, "invitations", state.editingId);
+                const docSnap = await getDoc(docRef);
+                
+                if (!docSnap.exists() || docSnap.data().ownerUid !== currentUser.uid) {
+                    showToast("Access Denied", "error");
+                    window.location.hash = '#dashboard';
+                    return;
+                }
+
+                state.data = docSnap.data();
+                document.getElementById('editor-code-badge').innerText = `ID: ${state.editingId}`;
+                
+                populateTemplateList();
+                bindDataToForms();
+                renderExtraEventsForm();
+                updateEditorPreview();
+
+            } catch(e) { 
+                console.error(e); 
+                showToast("Error loading editor", "error");
+            }
+            hideLoader();
+        }
+
+        // Tabs Logic
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function populateTemplateList() {
+            const container = document.getElementById('template-list-container');
+            container.innerHTML = '';
+            Object.values(TEMPLATES).forEach(t => {
+                const isSelected = state.data.templateId === t.id;
+                container.innerHTML += `
+                    <div onclick="selectTemplate('${t.id}')" class="cursor-pointer border-2 rounded-xl overflow-hidden transition ${isSelected ? 'border-brand-500 shadow-md ring-2 ring-brand-200' : 'border-gray-100 hover:border-gray-300'}">
+                        <div class="h-32 bg-cover bg-center" style="background-image: url('${t.thumb}')"></div>
+                        <div class="p-2 text-center text-xs font-semibold bg-white text-gray-800">${t.name}</div>
+                    </div>
+                `;
+            });
+        }
+
+        window.selectTemplate = function(id) {
+            state.data.templateId = id;
+            
+            // Apply template defaults to UI colors if custom overrides don't exist
+            const t = TEMPLATES[id];
+            if(!state.data.design.colors.primary) document.getElementById('ed-color-primary').value = t.defaults.colors.primary;
+            if(!state.data.design.colors.bg) document.getElementById('ed-color-bg').value = t.defaults.colors.bg;
+            if(!state.data.design.colors.text) document.getElementById('ed-color-text').value = t.defaults.colors.text;
+            
+            populateTemplateList();
+            handleEditorInput(); // Trigger render & save
+        }
+
+        function bindDataToForms() {
+            const d = state.data;
+            
+            // Content
+            document.getElementById('ed-groom').value = d.couple?.groom || '';
+            document.getElementById('ed-bride').value = d.couple?.bride || '';
+            document.getElementById('ed-heading').value = d.content?.heading || '';
+            document.getElementById('ed-message').value = d.content?.message || '';
+            
+            const sq = d.settings?.showQuote;
+            document.getElementById('ed-show-quote').checked = sq;
+            document.getElementById('quote-fields').style.display = sq ? 'block' : 'none';
+            document.getElementById('ed-arabic').value = d.content?.arabicText || '';
+            document.getElementById('ed-translation').value = d.content?.translation || '';
+            
+            // Events
+            document.getElementById('ed-me-title').value = d.mainEvent?.title || '';
+            document.getElementById('ed-me-date').value = d.mainEvent?.date || '';
+            document.getElementById('ed-me-time').value = d.mainEvent?.time || '';
+            document.getElementById('ed-me-venue').value = d.mainEvent?.venue || '';
+            document.getElementById('ed-me-address').value = d.mainEvent?.address || '';
+            document.getElementById('ed-me-map').value = d.mainEvent?.mapUrl || '';
+            
+            // Design
+            const t = TEMPLATES[d.templateId] || TEMPLATES['islamic-gold'];
+            document.getElementById('ed-color-primary').value = d.design?.colors?.primary || t.defaults.colors.primary;
+            document.getElementById('ed-color-bg').value = d.design?.colors?.bg || t.defaults.colors.bg;
+            document.getElementById('ed-color-text').value = d.design?.colors?.text || t.defaults.colors.text;
+            document.getElementById('ed-font-heading').value = d.design?.fonts?.heading || t.defaults.fonts.heading;
+            
+            document.getElementById('ed-show-bismillah').checked = d.settings?.showBismillah;
+            document.getElementById('ed-show-qr').checked = d.settings?.showMap;
+            
+            // Status
+            const isPub = d.status === 'published';
+            document.getElementById('toggle-publish').checked = isPub;
+            document.getElementById('publish-status-text').innerText = isPub ? 'Published' : 'Draft';
+        }
+
+        // Auto-save & Preview logic
+        window.handleEditorInput = function() {
+            // Update UI State from Forms
+            state.data.couple.groom = document.getElementById('ed-groom').value;
+            state.data.couple.bride = document.getElementById('ed-bride').value;
+            state.data.content.heading = document.getElementById('ed-heading').value;
+            state.data.content.message = document.getElementById('ed-message').value;
+            
+            state.data.settings.showQuote = document.getElementById('ed-show-quote').checked;
+            document.getElementById('quote-fields').style.display = state.data.settings.showQuote ? 'block' : 'none';
+            state.data.content.arabicText = document.getElementById('ed-arabic').value;
+            state.data.content.translation = document.getElementById('ed-translation').value;
+            
+            state.data.mainEvent.title = document.getElementById('ed-me-title').value;
+            state.data.mainEvent.date = document.getElementById('ed-me-date').value;
+            state.data.mainEvent.time = document.getElementById('ed-me-time').value;
+            state.data.mainEvent.venue = document.getElementById('ed-me-venue').value;
+            state.data.mainEvent.address = document.getElementById('ed-me-address').value;
+            state.data.mainEvent.mapUrl = document.getElementById('ed-me-map').value;
+            
+            state.data.design.colors.primary = document.getElementById('ed-color-primary').value;
+            state.data.design.colors.bg = document.getElementById('ed-color-bg').value;
+            state.data.design.colors.text = document.getElementById('ed-color-text').value;
+            state.data.design.fonts.heading = document.getElementById('ed-font-heading').value;
+            
+            // Labels for colors
+            document.getElementById('lbl-color-primary').innerText = state.data.design.colors.primary;
+            document.getElementById('lbl-color-bg').innerText = state.data.design.colors.bg;
+            document.getElementById('lbl-color-text').innerText = state.data.design.colors.text;
+            
+            state.data.settings.showBismillah = document.getElementById('ed-show-bismillah').checked;
+            state.data.settings.showMap = document.getElementById('ed-show-qr').checked;
+            
+            // Render Live Preview
+            updateEditorPreview();
+            
+            // Trigger Auto-save (Debounced)
+            clearTimeout(state.saveTimeout);
+            document.getElementById('save-status').classList.remove('opacity-100');
+            state.saveTimeout = setTimeout(saveToFirestore, 1000);
+        }
+
+        function updateEditorPreview() {
+            const container = document.getElementById('renderer-output-editor');
+            container.innerHTML = renderCardHTML(state.data);
+        }
+
+        async function saveToFirestore() {
+            try {
+                state.data.updatedAt = serverTimestamp();
+                await updateDoc(doc(db, "invitations", state.editingId), state.data);
+                
+                const badge = document.getElementById('save-status');
+                badge.classList.add('opacity-100');
+                setTimeout(() => badge.classList.remove('opacity-100'), 2500);
+            } catch(e) {
+                console.error(e);
+                showToast("Failed to save changes", "error");
+            }
+        }
+
+        /* --- EXTRA EVENTS (MAX 5) --- */
+        window.renderExtraEventsForm = function() {
+            const ex = state.data.extraEvents || [];
+            const container = document.getElementById('extra-events-container');
+            const btn = document.getElementById('btn-add-event');
+            const msg = document.getElementById('max-events-msg');
+            const counter = document.getElementById('extra-events-counter');
+            
+            container.innerHTML = '';
+            counter.innerText = `${ex.length}/5`;
+
+            if(ex.length >= 5) {
+                btn.classList.add('hidden');
+                msg.classList.remove('hidden');
+            } else {
+                btn.classList.remove('hidden');
+                msg.classList.add('hidden');
+            }
+
+            ex.forEach((ev, i) => {
+                container.innerHTML += `
+                    <div class="bg-white border border-gray-200 p-3 rounded-lg relative shadow-sm">
+                        <button onclick="removeExtraEvent(${i})" class="absolute top-2 right-2 text-red-400 hover:text-red-600 p-1"><i class="fa-solid fa-xmark"></i></button>
+                        <input type="text" value="${ev.name || ''}" placeholder="Event Name" class="text-sm font-bold w-3/4 outline-none border-b border-gray-100 mb-2" onchange="updateEx(${i}, 'name', this.value)">
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <input type="text" value="${ev.date || ''}" placeholder="Date" class="text-xs bg-gray-50 border border-gray-200 px-2 py-1 rounded" onchange="updateEx(${i}, 'date', this.value)">
+                            <input type="text" value="${ev.time || ''}" placeholder="Time" class="text-xs bg-gray-50 border border-gray-200 px-2 py-1 rounded" onchange="updateEx(${i}, 'time', this.value)">
+                        </div>
+                        <input type="text" value="${ev.venue || ''}" placeholder="Venue Name" class="w-full text-xs bg-gray-50 border border-gray-200 px-2 py-1 rounded" onchange="updateEx(${i}, 'venue', this.value)">
+                    </div>
+                `;
+            });
+        }
+
+        window.addExtraEvent = function() {
+            if(!state.data.extraEvents) state.data.extraEvents = [];
+            if(state.data.extraEvents.length >= 5) return;
+            state.data.extraEvents.push({ name: '', date: '', time: '', venue: '' });
+            renderExtraEventsForm();
+            handleEditorInput(); // Update preview & save
+        }
+        
+        window.removeExtraEvent = function(i) {
+            state.data.extraEvents.splice(i, 1);
+            renderExtraEventsForm();
+            handleEditorInput();
+        }
+
+        window.updateEx = function(index, field, val) {
+            state.data.extraEvents[index][field] = val;
+            handleEditorInput();
+        }
+
+        // --- PUBLISH LOGIC ---
+        window.togglePublishStatus = async function(checkbox) {
+            const newStatus = checkbox.checked ? 'published' : 'draft';
+            document.getElementById('publish-status-text').innerText = checkbox.checked ? 'Published' : 'Draft';
+            state.data.status = newStatus;
+            
+            try {
+                await updateDoc(doc(db, "invitations", state.editingId), { status: newStatus });
+                showToast(checkbox.checked ? "Invitation is now LIVE!" : "Changed to Draft mode", "success");
+            } catch(e) {
+                console.error(e);
+                checkbox.checked = !checkbox.checked; // revert UI
+                showToast("Failed to update status", "error");
+            }
+        }
+
+        window.deleteInvitation = async function() {
+            if(confirm("Are you sure you want to permanently delete this invitation?")) {
+                try {
+                    await deleteDoc(doc(db, "invitations", state.editingId));
+                    showToast("Invitation deleted", "success");
+                    window.location.hash = '#dashboard';
+                } catch(e) {
+                    showToast("Error deleting", "error");
+                }
+            }
+        }
+
+        // Zoom logic for editor preview
+        window.zoomPreview = function(delta) {
+            state.previewZoom += delta;
+            if(state.previewZoom < 0.5) state.previewZoom = 0.5;
+            if(state.previewZoom > 1.5) state.previewZoom = 1.5;
+            document.getElementById('preview-container').style.transform = `scale(${state.previewZoom})`;
+        }
+
+        /* ==========================================
+           IMAGE UPLOAD LOGIC
+           ========================================== */
+        window.handleImageUpload = async function(input, targetField) {
+            const file = input.files[0];
+            if(!file) return;
+            if(file.size > 2 * 1024 * 1024) {
+                showToast("File too large (Max 2MB)", "error");
+                return;
+            }
+
+            try {
+                showToast("Uploading image...", "info");
+                // Path structure: users/{uid}/invitations/{invId}/{filename}
+                const storageRef = ref(storage, `users/${currentUser.uid}/invitations/${state.editingId}/${targetField}_${Date.now()}`);
+                await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(storageRef);
+                
+                state.data.couple[targetField] = url;
+                
+                // Update UI Thumbnail
+                const imgEl = document.getElementById(`prev-${targetField.replace('Photo', '')}-photo`);
+                const iconEl = document.getElementById(`icon-${targetField.replace('Photo', '')}-photo`);
+                if(imgEl && iconEl) {
+                    imgEl.src = url;
+                    imgEl.classList.remove('hidden');
+                    iconEl.classList.add('hidden');
+                }
+                
+                handleEditorInput(); // update preview & save
+                showToast("Image uploaded successfully!", "success");
+            } catch(e) {
+                console.error(e);
+                showToast("Upload failed.", "error");
+            }
+        }
+
+        /* ==========================================
+           PUBLIC VIEWER LOGIC
+           ========================================== */
+        async function loadPublicInvitation(code) {
+            showLoader();
+            try {
+                const docRef = doc(db, "invitations", code);
+                const docSnap = await getDoc(docRef);
+
+                if (!docSnap.exists()) {
+                    window.location.hash = '#error';
+                    return;
+                }
+
+                const data = docSnap.data();
+
+                // Security check for draft mode
+                if (data.status !== 'published') {
+                    if (!currentUser || currentUser.uid !== data.ownerUid) {
+                         window.location.hash = '#error';
+                         return;
+                    } else {
+                        showToast("Viewing as Owner (Draft Mode)", "info");
+                    }
+                }
+
+                // Render Public Card
+                const container = document.getElementById('renderer-output-public');
+                container.innerHTML = renderCardHTML(data);
+                
+                // Hide share bar if map/share disabled (optional customization logic here)
+
+            } catch (e) {
+                console.error(e);
+                window.location.hash = '#error';
+            }
+            hideLoader();
+        }
+
+        // Public Share Helpers
+        window.publicShareWhatsApp = function() {
+            const url = window.location.href;
+            const text = `You are cordially invited to our wedding ceremony. View our invitation here: ${url}`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        window.publicCopyLink = function() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast("Link copied to clipboard!", "success");
+            });
+        }
+
+        /* ==========================================
+           UTILITIES
+           ========================================== */
+        function showLoader() { document.getElementById('global-loader').classList.remove('hidden'); }
+        function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
+        
+        function showToast(msg, type='info') {
+            const cont = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = `toast ${type === 'error' ? 'bg-red-600' : type === 'success' ? 'bg-green-600' : 'bg-gray-800'}`;
+            el.innerHTML = msg;
+            cont.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
+        }
+
+        // Initial Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            // Delay route processing to let Firebase auth initialize
+            setTimeout(handleRoute, 800); 
+        });
+
+    </script>
+</body>
+</html>
