@@ -67,7 +67,7 @@
     <!-- Global Loader Overlay -->
     <div id="global-loader" class="fixed inset-0 bg-white/90 z-[100] flex flex-col items-center justify-center hidden backdrop-blur-sm transition-opacity">
         <div class="loader w-12 h-12 border-4 mb-4"></div>
-        <p class="text-gray-600 font-medium tracking-wide">Please wait...</p>
+        <p class="text-gray-600 font-medium tracking-wide" id="loader-text">Please wait...</p>
     </div>
 
     <!-- Toast Container -->
@@ -169,7 +169,7 @@
         <!-- Editor Workspace -->
         <div class="flex-grow flex flex-col-reverse lg:flex-row overflow-hidden">
             
-            <!-- Controls Panel (Left on Desktop, Bottom on Mobile) -->
+            <!-- Controls Panel -->
             <div class="w-full lg:w-[400px] bg-white border-r border-gray-200 flex flex-col h-[50vh] lg:h-full shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] lg:shadow-none z-10">
                 
                 <!-- Tabs -->
@@ -199,9 +199,9 @@
                                 <h3 class="text-xs font-bold text-brand-500 mb-2 uppercase tracking-wider">Couple Details</h3>
                                 <div class="space-y-3">
                                     <div><label class="block text-xs text-gray-500 mb-1">Groom's Name</label>
-                                    <input type="text" id="ed-groom" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition" oninput="handleEditorInput()"></div>
+                                    <input type="text" id="ed-groom" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-brand-500 outline-none transition" oninput="handleEditorInput()"></div>
                                     <div><label class="block text-xs text-gray-500 mb-1">Bride's Name</label>
-                                    <input type="text" id="ed-bride" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition" oninput="handleEditorInput()"></div>
+                                    <input type="text" id="ed-bride" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-brand-500 outline-none transition" oninput="handleEditorInput()"></div>
                                 </div>
                             </div>
                             
@@ -342,41 +342,44 @@
                     <!-- PHOTOS TAB -->
                     <div id="tab-photos" class="tab-content">
                         <div class="space-y-4">
-                            <p class="text-xs text-gray-500 mb-4">Upload photos if your selected template supports them. (Square 1:1 recommended)</p>
+                            <div class="bg-blue-50 border border-blue-100 p-3 rounded-lg flex items-start gap-2 mb-4">
+                                <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
+                                <p class="text-xs text-blue-800">Images are auto-compressed to max 150KB and uploaded safely to save your storage space.</p>
+                            </div>
                             
                             <!-- Groom Photo -->
-                            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+                            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between hover:border-gray-300 transition">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200">
+                                    <div class="w-12 h-12 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200 relative">
                                         <img id="prev-groom-photo" src="" class="w-full h-full object-cover hidden">
                                         <i class="fa-solid fa-user text-gray-400" id="icon-groom-photo"></i>
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-gray-800">Groom Photo</p>
-                                        <p class="text-[10px] text-gray-400">JPG, PNG (Max 2MB)</p>
+                                        <p class="text-[10px] text-gray-400">Square 1:1 recommended</p>
                                     </div>
                                 </div>
                                 <label class="cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-1.5 rounded border border-gray-200 text-xs font-medium transition">
                                     Upload
-                                    <input type="file" class="hidden" accept="image/jpeg, image/png" onchange="handleImageUpload(this, 'groomPhoto')">
+                                    <input type="file" class="hidden" accept="image/jpeg, image/png, image/webp" onchange="handleImageUpload(this, 'groomPhoto')">
                                 </label>
                             </div>
 
                             <!-- Bride Photo -->
-                            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between">
+                            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between hover:border-gray-300 transition">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200">
+                                    <div class="w-12 h-12 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200 relative">
                                         <img id="prev-bride-photo" src="" class="w-full h-full object-cover hidden">
                                         <i class="fa-solid fa-user text-gray-400" id="icon-bride-photo"></i>
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-gray-800">Bride Photo</p>
-                                        <p class="text-[10px] text-gray-400">JPG, PNG (Max 2MB)</p>
+                                        <p class="text-[10px] text-gray-400">Square 1:1 recommended</p>
                                     </div>
                                 </div>
                                 <label class="cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-1.5 rounded border border-gray-200 text-xs font-medium transition">
                                     Upload
-                                    <input type="file" class="hidden" accept="image/jpeg, image/png" onchange="handleImageUpload(this, 'bridePhoto')">
+                                    <input type="file" class="hidden" accept="image/jpeg, image/png, image/webp" onchange="handleImageUpload(this, 'bridePhoto')">
                                 </label>
                             </div>
 
@@ -389,7 +392,7 @@
                 </div>
             </div>
 
-            <!-- Live Preview Panel (Right on Desktop, Top on Mobile) -->
+            <!-- Live Preview Panel -->
             <div class="flex-grow bg-gray-200/60 relative flex flex-col items-center justify-center h-[50vh] lg:h-full p-4 overflow-hidden">
                 <div class="absolute top-4 right-4 z-10 flex gap-2">
                     <button onclick="zoomPreview(0.1)" class="w-8 h-8 bg-white rounded shadow-sm text-gray-600 hover:text-brand-500"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
@@ -407,7 +410,6 @@
 
     <!-- 4. PUBLIC INVITATION VIEW -->
     <div id="view-public" class="view-section h-full w-full bg-black flex flex-col items-center overflow-y-auto">
-        <!-- Rendered Card container. Scales to fit mobile nicely, stays centered on desktop -->
         <div class="w-full max-w-[450px] min-h-screen bg-white relative flex flex-col shadow-2xl mx-auto">
             
             <div class="flex-grow relative">
@@ -415,7 +417,7 @@
                 <div id="renderer-output-public" class="w-full h-full relative min-h-screen"></div>
             </div>
 
-            <!-- Public Action Bar (Sticky Bottom) -->
+            <!-- Public Action Bar -->
             <div id="public-action-bar" class="sticky bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-100 p-4 pb-6 flex gap-3 z-50 rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
                 <button onclick="publicShareWhatsApp()" class="flex-1 bg-[#25D366] text-white py-3 rounded-xl font-semibold shadow-sm hover:bg-[#20bd5a] transition flex items-center justify-center gap-2">
                     <i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp
@@ -444,13 +446,11 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+        
+        // Changed uploadBytes to uploadString for Base64 Upload
+        import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
-        /* 
-        ========================================================================
-        ⚠️ FIREBASE CONFIGURATION
-        ========================================================================
-        */
+        // Your Exact Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCp-NKbL_kmB2nzlTv9fSisc2cVuE55p-Q",
             authDomain: "online-angadi-003.firebaseapp.com",
@@ -461,100 +461,54 @@
             measurementId: "G-GH1DZXR5ZP"
         };
 
-        /* 
-        ========================================================================
-        ⚠️ FIRESTORE SECURITY RULES (Apply in Firebase Console)
-        ========================================================================
-        rules_version = '2';
-        service cloud.firestore {
-          match /databases/{database}/documents {
-            match /invitations/{inviteId} {
-              // Create: Must assign oneself as owner
-              allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
-              // Update/Delete: Only owner
-              allow update, delete: if request.auth != null && resource.data.ownerUid == request.auth.uid;
-              // Read: Owner OR if published
-              allow read: if (request.auth != null && resource.data.ownerUid == request.auth.uid) || resource.data.status == 'published';
-            }
-          }
-        }
-        
-        ⚠️ STORAGE SECURITY RULES (Apply in Firebase Console)
-        ========================================================================
-        rules_version = '2';
-        service firebase.storage {
-          match /b/{bucket}/o {
-            match /users/{userId}/invitations/{inviteId}/{fileName} {
-              allow write: if request.auth != null && request.auth.uid == userId;
-              allow read: if true; // Public can see the images
-            }
-          }
-        }
-        */
-
         let app, auth, db, storage;
         let currentUser = null;
         
-        // App State
         const state = {
             editingId: null,
-            data: null, // Current invitation data
+            data: null,
             saveTimeout: null,
             previewZoom: 1
         };
 
-        // Initialize Firebase (wrapped in try-catch to allow UI rendering even if config is missing during dev)
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
             storage = getStorage(app);
         } catch (e) {
-            console.error("Firebase init failed (missing config):", e);
-            showToast("Firebase Config Missing. App will not function fully.", "error");
+            console.error("Firebase init failed:", e);
+            showToast("Firebase Config Error.", "error");
         }
 
         /* ==========================================
            TEMPLATE ENGINE
-           Defines layout and defaults for themes.
            ========================================== */
         const TEMPLATES = {
             'islamic-gold': {
                 id: 'islamic-gold',
                 name: 'Islamic Gold',
                 thumb: 'https://images.unsplash.com/photo-1576506295286-5cda18df43e0?q=80&w=300&auto=format&fit=crop',
-                defaults: {
-                    colors: { primary: '#B38A4A', bg: '#FFF9F0', text: '#1F2937' },
-                    fonts: { heading: "'Playfair Display', serif" }
-                }
+                defaults: { colors: { primary: '#B38A4A', bg: '#FFF9F0', text: '#1F2937' }, fonts: { heading: "'Playfair Display', serif" } }
             },
             'minimal-floral': {
                 id: 'minimal-floral',
                 name: 'Minimal Floral',
                 thumb: 'https://images.unsplash.com/photo-1523688881242-6e2a8656a894?q=80&w=300&auto=format&fit=crop',
-                defaults: {
-                    colors: { primary: '#6B8E23', bg: '#FFFFFF', text: '#2d3748' },
-                    fonts: { heading: "'Montserrat', sans-serif" }
-                }
+                defaults: { colors: { primary: '#6B8E23', bg: '#FFFFFF', text: '#2d3748' }, fonts: { heading: "'Montserrat', sans-serif" } }
             },
             'royal-blue': {
                 id: 'royal-blue',
                 name: 'Royal Elegance',
                 thumb: 'https://images.unsplash.com/photo-1549469502-c8de9359e192?q=80&w=300&auto=format&fit=crop',
-                defaults: {
-                    colors: { primary: '#1E3A8A', bg: '#F8FAFC', text: '#0F172A' },
-                    fonts: { heading: "'Cinzel', serif" }
-                }
+                defaults: { colors: { primary: '#1E3A8A', bg: '#F8FAFC', text: '#0F172A' }, fonts: { heading: "'Cinzel', serif" } }
             }
         };
 
-        // Core Renderer Function - Converts JSON data to HTML
         function renderCardHTML(data) {
             if(!data) return '';
-            
             const t = TEMPLATES[data.templateId] || TEMPLATES['islamic-gold'];
             
-            // Merge defaults with user overrides
             const design = {
                 primary: data.design?.colors?.primary || t.defaults.colors.primary,
                 bg: data.design?.colors?.bg || t.defaults.colors.bg,
@@ -568,7 +522,6 @@
             const me = data.mainEvent || {};
             const ex = data.extraEvents || [];
 
-            // Helper to generate dynamic styles
             const customStyles = `
                 --primary: ${design.primary};
                 --bg: ${design.bg};
@@ -578,38 +531,28 @@
                 color: var(--text);
             `;
 
-            // HTML Construction
             let html = `<div class="template-card relative p-8 flex flex-col items-center text-center transition-all duration-500" style="${customStyles}">`;
-            
-            // Border Overlay
             html += `<div class="absolute inset-4 border-2 rounded-2xl pointer-events-none z-0 opacity-40" style="border-color: var(--primary);"></div>`;
-            
-            // Content Wrapper
             html += `<div class="relative z-10 w-full flex flex-col items-center min-h-[90%] my-auto py-8">`;
 
-            // Bismillah
             if(settings.showBismillah) {
                 html += `<div class="font-arabic text-3xl mb-8" style="color: var(--primary)">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>`;
             }
 
-            // Heading
             if(c.heading) {
                 html += `<div class="text-[10px] uppercase tracking-[0.3em] mb-8 font-semibold opacity-70">${c.heading}</div>`;
             }
 
-            // Couple Names
             html += `
                 <h1 class="text-4xl font-bold mb-3" style="font-family: ${design.fontHeading}; color: var(--primary)">${couple.groom || 'Groom Name'}</h1>
                 <span class="text-xl italic font-serif opacity-60 my-2">&</span>
                 <h1 class="text-4xl font-bold mt-3 mb-10" style="font-family: ${design.fontHeading}; color: var(--primary)">${couple.bride || 'Bride Name'}</h1>
             `;
 
-            // Message
             if(c.message) {
                 html += `<p class="text-sm leading-relaxed mb-8 px-4 opacity-80 whitespace-pre-line">${c.message}</p>`;
             }
 
-            // Quran Quote
             if(settings.showQuote && c.arabicText) {
                 html += `
                     <div class="my-8 py-6 border-y border-opacity-20 w-3/4 mx-auto" style="border-color: var(--primary)">
@@ -619,7 +562,6 @@
                 `;
             }
 
-            // Main Event
             html += `
                 <div class="bg-white/40 backdrop-blur-sm rounded-xl p-6 w-full max-w-sm mb-8 shadow-sm border border-black/5">
                     <h3 class="text-[11px] font-bold uppercase tracking-widest mb-4" style="color: var(--primary)">${me.title || 'Main Event'}</h3>
@@ -635,7 +577,6 @@
                 </div>
             `;
 
-            // Extra Events
             if(ex.length > 0) {
                 html += `<div class="w-full max-w-sm space-y-4 mb-10">`;
                 ex.forEach(ev => {
@@ -650,7 +591,6 @@
                 html += `</div>`;
             }
 
-            // Photo Rendering (If URLs exist)
             if(couple.groomPhoto || couple.bridePhoto) {
                  html += `<div class="flex gap-4 mb-8 justify-center w-full">`;
                  if(couple.groomPhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-4 bg-gray-100 shadow-md" style="border-color: var(--primary)"><img src="${couple.groomPhoto}" class="w-full h-full object-cover"></div>`;
@@ -658,7 +598,7 @@
                  html += `</div>`;
             }
 
-            html += `</div></div>`; // Close content wrapper and card
+            html += `</div></div>`;
             return html;
         }
 
@@ -689,7 +629,6 @@
                 }
             }
             else if (hash.startsWith('#/i/')) {
-                // Public Viewer: URL Format -> yourdomain.com/#/i/A7kP2
                 const code = hash.replace('#/i/', '');
                 document.getElementById('view-public').classList.add('active');
                 loadPublicInvitation(code);
@@ -698,7 +637,6 @@
                 document.getElementById('view-error').classList.add('active');
             }
         }
-
         window.addEventListener('hashchange', handleRoute);
 
         /* ==========================================
@@ -722,10 +660,9 @@
 
         document.getElementById('btn-google-login')?.addEventListener('click', async () => {
             try {
-                showLoader();
+                showLoader("Signing in...");
                 const provider = new GoogleAuthProvider();
                 await signInWithPopup(auth, provider);
-                // Hash change will handle routing
             } catch(e) {
                 showToast("Login failed. Check console.", "error");
                 console.error(e);
@@ -787,13 +724,13 @@
                     });
                 }
             } catch (e) {
-                console.error("Dashboard error:", e);
+                console.error(e);
                 showToast("Error loading invitations", "error");
             }
             hideLoader();
         }
 
-        // GENERATE UNIQUE 5 CHAR CODE
+        // GENERATE UNIQUE 5 CHAR CODE (Using secure randomizer)
         function generateSecureCode() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             const array = new Uint32Array(5);
@@ -806,7 +743,7 @@
         }
 
         window.createNewInvitation = async function() {
-            showLoader();
+            showLoader("Preparing workspace...");
             try {
                 let code = '';
                 let isUnique = false;
@@ -818,7 +755,6 @@
                     if (!docSnap.exists()) isUnique = true;
                 }
 
-                // Initial Data Structure
                 const initData = {
                     ownerUid: currentUser.uid,
                     code: code,
@@ -828,7 +764,7 @@
                     mainEvent: { title: 'Nikah Ceremony', date: '', time: '', venue: '', address: '', mapUrl: '' },
                     extraEvents: [],
                     content: { heading: 'We cordially invite you', message: 'to join us on our special day\nand bless our new beginning.', arabicText: 'وَخَلَقْنَاكُمْ أَزْوَاجًا', translation: '"And We created you in pairs."' },
-                    design: { colors: {}, fonts: {} }, // Empty uses template defaults
+                    design: { colors: {}, fonts: {} }, 
                     settings: { showBismillah: true, showQuote: true, showMap: true },
                     createdAt: serverTimestamp(),
                     updatedAt: serverTimestamp()
@@ -873,7 +809,6 @@
             hideLoader();
         }
 
-        // Tabs Logic
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -897,21 +832,17 @@
 
         window.selectTemplate = function(id) {
             state.data.templateId = id;
-            
-            // Apply template defaults to UI colors if custom overrides don't exist
             const t = TEMPLATES[id];
             if(!state.data.design.colors.primary) document.getElementById('ed-color-primary').value = t.defaults.colors.primary;
             if(!state.data.design.colors.bg) document.getElementById('ed-color-bg').value = t.defaults.colors.bg;
             if(!state.data.design.colors.text) document.getElementById('ed-color-text').value = t.defaults.colors.text;
             
             populateTemplateList();
-            handleEditorInput(); // Trigger render & save
+            handleEditorInput(); 
         }
 
         function bindDataToForms() {
             const d = state.data;
-            
-            // Content
             document.getElementById('ed-groom').value = d.couple?.groom || '';
             document.getElementById('ed-bride').value = d.couple?.bride || '';
             document.getElementById('ed-heading').value = d.content?.heading || '';
@@ -923,7 +854,6 @@
             document.getElementById('ed-arabic').value = d.content?.arabicText || '';
             document.getElementById('ed-translation').value = d.content?.translation || '';
             
-            // Events
             document.getElementById('ed-me-title').value = d.mainEvent?.title || '';
             document.getElementById('ed-me-date').value = d.mainEvent?.date || '';
             document.getElementById('ed-me-time').value = d.mainEvent?.time || '';
@@ -931,7 +861,6 @@
             document.getElementById('ed-me-address').value = d.mainEvent?.address || '';
             document.getElementById('ed-me-map').value = d.mainEvent?.mapUrl || '';
             
-            // Design
             const t = TEMPLATES[d.templateId] || TEMPLATES['islamic-gold'];
             document.getElementById('ed-color-primary').value = d.design?.colors?.primary || t.defaults.colors.primary;
             document.getElementById('ed-color-bg').value = d.design?.colors?.bg || t.defaults.colors.bg;
@@ -941,15 +870,23 @@
             document.getElementById('ed-show-bismillah').checked = d.settings?.showBismillah;
             document.getElementById('ed-show-qr').checked = d.settings?.showMap;
             
-            // Status
             const isPub = d.status === 'published';
             document.getElementById('toggle-publish').checked = isPub;
             document.getElementById('publish-status-text').innerText = isPub ? 'Published' : 'Draft';
+            
+            if(d.couple?.groomPhoto) {
+                document.getElementById('prev-groom-photo').src = d.couple.groomPhoto;
+                document.getElementById('prev-groom-photo').classList.remove('hidden');
+                document.getElementById('icon-groom-photo').classList.add('hidden');
+            }
+            if(d.couple?.bridePhoto) {
+                document.getElementById('prev-bride-photo').src = d.couple.bridePhoto;
+                document.getElementById('prev-bride-photo').classList.remove('hidden');
+                document.getElementById('icon-bride-photo').classList.add('hidden');
+            }
         }
 
-        // Auto-save & Preview logic
         window.handleEditorInput = function() {
-            // Update UI State from Forms
             state.data.couple.groom = document.getElementById('ed-groom').value;
             state.data.couple.bride = document.getElementById('ed-bride').value;
             state.data.content.heading = document.getElementById('ed-heading').value;
@@ -972,7 +909,6 @@
             state.data.design.colors.text = document.getElementById('ed-color-text').value;
             state.data.design.fonts.heading = document.getElementById('ed-font-heading').value;
             
-            // Labels for colors
             document.getElementById('lbl-color-primary').innerText = state.data.design.colors.primary;
             document.getElementById('lbl-color-bg').innerText = state.data.design.colors.bg;
             document.getElementById('lbl-color-text').innerText = state.data.design.colors.text;
@@ -980,10 +916,8 @@
             state.data.settings.showBismillah = document.getElementById('ed-show-bismillah').checked;
             state.data.settings.showMap = document.getElementById('ed-show-qr').checked;
             
-            // Render Live Preview
             updateEditorPreview();
             
-            // Trigger Auto-save (Debounced)
             clearTimeout(state.saveTimeout);
             document.getElementById('save-status').classList.remove('opacity-100');
             state.saveTimeout = setTimeout(saveToFirestore, 1000);
@@ -1047,7 +981,7 @@
             if(state.data.extraEvents.length >= 5) return;
             state.data.extraEvents.push({ name: '', date: '', time: '', venue: '' });
             renderExtraEventsForm();
-            handleEditorInput(); // Update preview & save
+            handleEditorInput(); 
         }
         
         window.removeExtraEvent = function(i) {
@@ -1061,7 +995,6 @@
             handleEditorInput();
         }
 
-        // --- PUBLISH LOGIC ---
         window.togglePublishStatus = async function(checkbox) {
             const newStatus = checkbox.checked ? 'published' : 'draft';
             document.getElementById('publish-status-text').innerText = checkbox.checked ? 'Published' : 'Draft';
@@ -1071,8 +1004,7 @@
                 await updateDoc(doc(db, "invitations", state.editingId), { status: newStatus });
                 showToast(checkbox.checked ? "Invitation is now LIVE!" : "Changed to Draft mode", "success");
             } catch(e) {
-                console.error(e);
-                checkbox.checked = !checkbox.checked; // revert UI
+                checkbox.checked = !checkbox.checked; 
                 showToast("Failed to update status", "error");
             }
         }
@@ -1089,7 +1021,6 @@
             }
         }
 
-        // Zoom logic for editor preview
         window.zoomPreview = function(delta) {
             state.previewZoom += delta;
             if(state.previewZoom < 0.5) state.previewZoom = 0.5;
@@ -1098,26 +1029,81 @@
         }
 
         /* ==========================================
-           IMAGE UPLOAD LOGIC
+           IMAGE UPLOAD & COMPRESSION LOGIC
            ========================================== */
+           
+        // Helper to compress image and convert to Base64 (Data URL)
+        function compressImageToBase64(file, maxSizeKB) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Initial structural resize if image is huge (helps quality loop)
+                        const maxDim = 800;
+                        if (width > height && width > maxDim) {
+                            height = Math.round(height * (maxDim / width));
+                            width = maxDim;
+                        } else if (height > width && height > maxDim) {
+                            width = Math.round(width * (maxDim / height));
+                            height = maxDim;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        let quality = 0.9;
+                        let base64String = canvas.toDataURL('image/jpeg', quality);
+                        
+                        // Estimate size of base64 in KB
+                        let sizeKB = Math.round((base64String.length * 3) / 4 / 1024);
+
+                        // Loop to reduce quality until size is under limit
+                        while (sizeKB > maxSizeKB && quality > 0.1) {
+                            quality -= 0.1;
+                            base64String = canvas.toDataURL('image/jpeg', quality);
+                            sizeKB = Math.round((base64String.length * 3) / 4 / 1024);
+                        }
+                        
+                        resolve(base64String);
+                    };
+                    img.onerror = () => reject(new Error("Failed to load image"));
+                };
+                reader.onerror = () => reject(new Error("Failed to read file"));
+            });
+        }
+
         window.handleImageUpload = async function(input, targetField) {
             const file = input.files[0];
             if(!file) return;
-            if(file.size > 2 * 1024 * 1024) {
-                showToast("File too large (Max 2MB)", "error");
-                return;
-            }
 
             try {
-                showToast("Uploading image...", "info");
-                // Path structure: users/{uid}/invitations/{invId}/{filename}
+                showLoader("Compressing Image...");
+                
+                // 1. Compress image client-side to maximum 150KB
+                const base64Data = await compressImageToBase64(file, 150);
+                
+                document.getElementById('loader-text').innerText = "Uploading to Storage...";
+                
+                // 2. Upload Base64 Data URL to Firebase Storage
                 const storageRef = ref(storage, `users/${currentUser.uid}/invitations/${state.editingId}/${targetField}_${Date.now()}`);
-                await uploadBytes(storageRef, file);
+                
+                // Using uploadString for Base64 format
+                await uploadString(storageRef, base64Data, 'data_url');
+                
                 const url = await getDownloadURL(storageRef);
                 
+                // 3. Save generated Storage URL to document
                 state.data.couple[targetField] = url;
                 
-                // Update UI Thumbnail
                 const imgEl = document.getElementById(`prev-${targetField.replace('Photo', '')}-photo`);
                 const iconEl = document.getElementById(`icon-${targetField.replace('Photo', '')}-photo`);
                 if(imgEl && iconEl) {
@@ -1126,11 +1112,13 @@
                     iconEl.classList.add('hidden');
                 }
                 
-                handleEditorInput(); // update preview & save
-                showToast("Image uploaded successfully!", "success");
+                handleEditorInput(); // Triggers preview update and auto-save
+                showToast("Image processed and uploaded!", "success");
             } catch(e) {
                 console.error(e);
                 showToast("Upload failed.", "error");
+            } finally {
+                hideLoader();
             }
         }
 
@@ -1150,7 +1138,6 @@
 
                 const data = docSnap.data();
 
-                // Security check for draft mode
                 if (data.status !== 'published') {
                     if (!currentUser || currentUser.uid !== data.ownerUid) {
                          window.location.hash = '#error';
@@ -1160,11 +1147,8 @@
                     }
                 }
 
-                // Render Public Card
                 const container = document.getElementById('renderer-output-public');
                 container.innerHTML = renderCardHTML(data);
-                
-                // Hide share bar if map/share disabled (optional customization logic here)
 
             } catch (e) {
                 console.error(e);
@@ -1173,7 +1157,6 @@
             hideLoader();
         }
 
-        // Public Share Helpers
         window.publicShareWhatsApp = function() {
             const url = window.location.href;
             const text = `You are cordially invited to our wedding ceremony. View our invitation here: ${url}`;
@@ -1190,8 +1173,13 @@
         /* ==========================================
            UTILITIES
            ========================================== */
-        function showLoader() { document.getElementById('global-loader').classList.remove('hidden'); }
-        function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
+        function showLoader(msg = "Please wait...") { 
+            document.getElementById('loader-text').innerText = msg;
+            document.getElementById('global-loader').classList.remove('hidden'); 
+        }
+        function hideLoader() { 
+            document.getElementById('global-loader').classList.add('hidden'); 
+        }
         
         function showToast(msg, type='info') {
             const cont = document.getElementById('toast-container');
@@ -1202,9 +1190,7 @@
             setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
         }
 
-        // Initial Initialization
         window.addEventListener('DOMContentLoaded', () => {
-            // Delay route processing to let Firebase auth initialize
             setTimeout(handleRoute, 800); 
         });
 
