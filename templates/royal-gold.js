@@ -2,6 +2,7 @@ window.registerTemplate({
     id: 'royal-gold',
     name: 'Royal Islamic Gold',
     thumb: 'https://images.unsplash.com/photo-1576506295286-5cda18df43e0?q=80&w=300&auto=format&fit=crop',
+    scrollable: true,
     
     // Default colors and fonts if the user hasn't customized them yet
     defaults: { 
