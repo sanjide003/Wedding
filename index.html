@@ -415,20 +415,26 @@
             if(document.getElementById('view-dashboard').classList.contains('active')) renderTemplatesRow();
         };
 
-        // Dynamic Template Loader (Loads templates from GitHub/Vercel)
+        // Dynamic Template Loader (works both at a domain root and a GitHub Pages subpath)
         async function loadExternalTemplates() {
             try {
                 // templates/registry.json എന്ന ഫയൽ വായന
-                const response = await fetch('/templates/registry.json');
+                const templatesUrl = new URL('templates/', window.location.href);
+                const response = await fetch(new URL('registry.json', templatesUrl));
                 if(!response.ok) return;
                 
                 const files = await response.json();
+                if (!Array.isArray(files)) throw new Error('Template registry must be an array');
                 
                 // ഓരോ ഫയലും ആപ്പിലേക്ക് ലോഡ് ചെയ്യുന്നു
                 for(const file of files) {
+                    if (typeof file !== 'string' || !/^[a-zA-Z0-9_-]+\.js$/.test(file)) {
+                        console.warn('Ignoring invalid template filename:', file);
+                        continue;
+                    }
                     await new Promise((resolve) => {
                         const script = document.createElement('script');
-                        script.src = `/templates/${file}`;
+                        script.src = new URL(file, templatesUrl).href;
                         script.onload = resolve;
                         script.onerror = resolve; // പിഴവ് വന്നാലും അടുത്തതിലേക്ക് പോകും
                         document.head.appendChild(script);
