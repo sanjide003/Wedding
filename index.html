@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Wedding Studio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Poppins', 'sans-serif'],
+                        arabic: ['Amiri', 'serif'],
+                    },
+                    colors: { brand: { 50: '#fdf8f6', 100: '#f2e8e5', 500: '#B38A4A', 900: '#4A3825' } }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #F8F7F4; color: #1F2937; -webkit-tap-highlight-color: transparent;}
+        .font-serif { font-family: 'Playfair Display', serif; }
+        .font-arabic { font-family: 'Amiri', serif; }
+        
+        .view-section { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .view-section.active { opacity: 1; display: flex; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Toast & Loader */
+        #toast-container { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 400px; align-items: center; }
+        .toast { background: #1F2937; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: 500; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); animation: slideUp 0.3s ease forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #B38A4A; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Editor Overlay Styles */
+        .editable-block { position: relative; cursor: pointer; transition: box-shadow 0.2s, background-color 0.2s; border-radius: 8px; }
+        .editable-block.absolute-pos { transform: translate(-50%, -50%); cursor: move; } /* Freeform absolute positioning */
+        .editable-block:hover { box-shadow: 0 0 0 2px #3B82F6; background-color: rgba(59, 130, 246, 0.05); }
+        
+        .edit-badge { position: absolute; top: -10px; right: -10px; background: #3B82F6; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; opacity: 0; transform: scale(0.8); transition: all 0.2s; z-index: 50; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+        .drag-handle { position: absolute; top: -10px; left: -10px; background: #10B981; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; opacity: 0; transform: scale(0.8); transition: all 0.2s; z-index: 51; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: move; touch-action: none;}
+        
+        .editable-block:hover .edit-badge, .editable-block:hover .drag-handle { opacity: 1; transform: scale(1); }
+        .hidden-block { opacity: 0.3 !important; filter: grayscale(100%); }
+        .hidden-block:hover { opacity: 0.6 !important; }
+        .hidden-block .edit-badge { background: #EF4444; }
+        
+        .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+        
+        /* Fixed mobile layout fixes */
+        #view-editor.active { display: flex; flex-direction: column; }
+    </style>
+</head>
+<body class="antialiased h-[100dvh] w-screen overflow-hidden flex flex-col bg-gray-50">
+
+    <div id="global-loader" class="fixed inset-0 bg-white/95 z-[9999] flex flex-col items-center justify-center hidden backdrop-blur-md transition-opacity">
+        <div class="loader w-14 h-14 border-4 mb-4"></div>
+        <p class="text-gray-800 font-medium tracking-wide text-lg" id="loader-text">Loading...</p>
+    </div>
+    <div id="toast-container"></div>
+
+    <div id="view-login" class="view-section absolute inset-0 z-50 bg-[url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center flex-col items-center justify-center">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="relative z-10 max-w-md w-full px-6 flex flex-col items-center justify-center h-full">
+            <div class="bg-white/95 backdrop-blur-md p-8 sm:p-10 rounded-3xl shadow-2xl text-center border border-white/20 w-full">
+                <div class="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                    <i class="fa-solid fa-rings-wedding text-4xl text-brand-500"></i>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-2">Wedding Studio</h1>
+                <p class="text-gray-500 mb-10 text-sm">Create your perfect digital invitation</p>
+                <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-800 py-4 px-4 rounded-xl hover:bg-gray-50 hover:shadow-md transition-all font-semibold active:scale-[0.98] text-base">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6" alt="Google"> Continue with Google
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-dashboard" class="view-section absolute inset-0 bg-[#F8F7F4] flex-col overflow-y-auto">
+        <nav class="bg-white sticky top-0 z-40 border-b border-gray-200 shadow-sm shrink-0">
+            <div class="max-w-6xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+                <div class="font-serif font-bold text-xl text-brand-900 flex items-center gap-2"><i class="fa-solid fa-rings-wedding text-brand-500"></i> Studio</div>
+                <div class="flex items-center gap-3">
+                    <img id="user-avatar" src="" class="w-8 h-8 rounded-full bg-gray-200 hidden" alt="Avatar">
+                    <button id="btn-logout" class="text-gray-400 hover:text-red-500 transition w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center"><i class="fa-solid fa-power-off"></i></button>
+                </div>
+            </div>
+        </nav>
+        <main class="max-w-6xl mx-auto px-4 md:px-8 py-8 w-full flex-grow pb-24">
+            <div class="bg-gradient-to-r from-brand-900 to-brand-500 rounded-3xl shadow-lg p-8 mb-10 flex flex-col md:flex-row justify-between items-center gap-6 text-white relative overflow-hidden">
+                <div class="relative z-10 text-center md:text-left">
+                    <h2 class="text-3xl font-serif font-bold" id="dash-greeting">Welcome!</h2>
+                    <p class="text-brand-50 mt-2 opacity-90">Manage your elegant wedding invitations.</p>
+                </div>
+                <button onclick="createNewInvitation()" class="relative z-10 w-full md:w-auto bg-white text-brand-900 px-8 py-4 rounded-xl shadow-md font-bold transition hover:scale-105 active:scale-95"><i class="fa-solid fa-plus mr-2 text-brand-500"></i> Create Blank Canvas</button>
+            </div>
+
+            <!-- My Invitations Section -->
+            <div class="mb-10">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">My Invitations</h3>
+                    <button onclick="openViewAllModal('invitations')" class="text-sm font-semibold text-brand-500 hover:text-brand-900 transition flex items-center gap-1">View All <i class="fa-solid fa-arrow-right text-xs"></i></button>
+                </div>
+                <!-- Horizontal scroll container -->
+                <div id="invitations-row" class="flex gap-6 overflow-x-auto no-scrollbar pb-4 snap-x">
+                    <!-- Dynamic horizontal cards inserted here -->
+                </div>
+            </div>
+
+            <!-- Templates Section -->
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Templates</h3>
+                    <button onclick="openViewAllModal('templates')" class="text-sm font-semibold text-brand-500 hover:text-brand-900 transition flex items-center gap-1">View All <i class="fa-solid fa-arrow-right text-xs"></i></button>
+                </div>
+                <!-- Horizontal scroll container -->
+                <div id="templates-row" class="flex gap-6 overflow-x-auto no-scrollbar pb-4 snap-x">
+                    <!-- Dynamic horizontal templates inserted here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="view-editor" class="view-section absolute inset-0 bg-gray-200 flex-col">
+        <!-- Editor Top Nav -->
+        <nav class="bg-white border-b border-gray-200 h-14 md:h-16 flex items-center justify-between px-3 md:px-6 shrink-0 shadow-sm z-40">
+            <div class="flex items-center gap-2 md:gap-4">
+                <button onclick="window.location.hash='#dashboard'" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition active:scale-95"><i class="fa-solid fa-arrow-left"></i></button>
+                <div class="flex flex-col">
+                    <span class="font-bold text-gray-800 text-sm leading-none">Visual Editor</span>
+                    <span id="save-status" class="text-[10px] text-gray-500 mt-1 transition-opacity opacity-0"><i class="fa-solid fa-cloud-arrow-up mr-1"></i>Saved</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <!-- Layers Button -->
+                <button onclick="openModal('modal-layers')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition active:scale-95">
+                    <i class="fa-solid fa-layer-group text-brand-500"></i> <span class="hidden md:inline">Layers</span>
+                </button>
+                <button onclick="openModal('modal-themes')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition active:scale-95">
+                    <i class="fa-solid fa-palette text-brand-500"></i> <span class="hidden md:inline">Theme</span>
+                </button>
+                <div class="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 md:py-2 border border-gray-200 shadow-inner">
+                    <span id="publish-status-text" class="text-[10px] md:text-xs font-bold text-gray-600 w-12 md:w-16 text-center">Draft</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggle-publish" class="sr-only peer" onchange="togglePublishStatus(this)">
+                        <div class="w-8 h-4 md:w-9 md:h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 md:after:h-4 md:after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+                    </label>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Editor Workspace (WYSIWYG) -->
+        <div class="flex-grow overflow-auto relative flex justify-center pt-4 md:pt-8" id="editor-workspace">
+            <div id="editor-hint" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-6 py-3 rounded-full text-sm font-medium z-30 shadow-lg pointer-events-none transition-opacity duration-500 flex items-center gap-3">
+                <i class="fa-solid fa-hand-pointer animate-bounce"></i> Tap any element to edit or drag
+            </div>
+            
+            <div class="w-full max-w-[420px] bg-white min-h-[800px] shadow-2xl relative transition-transform duration-300 mx-auto overflow-hidden" id="visual-editor-canvas">
+                <div id="renderer-output-editor" class="w-full h-full relative"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-public" class="view-section absolute inset-0 bg-black flex-col items-center overflow-y-auto">
+        <div class="w-full max-w-[450px] min-h-screen bg-white relative flex flex-col shadow-2xl mx-auto">
+            <div id="renderer-output-public" class="w-full h-full relative flex-grow"></div>
+            <!-- Removed bottom action bar as requested -->
+        </div>
+    </div>
+
+    <div id="modal-container" class="fixed inset-0 z-[100] modal-overlay hidden flex-col justify-end md:justify-center items-center p-0 md:p-4">
+        <div class="bg-white w-full md:max-w-md md:rounded-3xl rounded-t-3xl shadow-2xl transform transition-transform translate-y-full md:translate-y-0 duration-300 flex flex-col max-h-[85vh]" id="modal-content-wrapper">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
+                <h3 class="font-bold text-gray-800 text-lg" id="modal-title">Edit</h3>
+                <button onclick="closeModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-5" id="modal-body">
+                
+                <!-- 1. Couple Modal -->
+                <div id="modal-couple" class="hidden edit-form space-y-4">
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Groom's Name</label>
+                    <input type="text" id="ed-groom" placeholder="e.g. Muhammad" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Bride's Name</label>
+                    <input type="text" id="ed-bride" placeholder="e.g. Aisha" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div class="border border-gray-200 rounded-xl p-3 text-center bg-gray-50 relative overflow-hidden">
+                            <img id="prev-groom-photo" src="" class="w-16 h-16 mx-auto rounded-full object-cover hidden shadow-sm mb-2">
+                            <i class="fa-solid fa-user text-gray-300 text-3xl mb-2 block" id="icon-groom-photo"></i>
+                            <label class="cursor-pointer bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-sm inline-block w-full">Groom Photo
+                                <input type="file" class="hidden" accept="image/*" onchange="handleImageUpload(this, 'groomPhoto')">
+                            </label>
+                        </div>
+                        <div class="border border-gray-200 rounded-xl p-3 text-center bg-gray-50 relative overflow-hidden">
+                            <img id="prev-bride-photo" src="" class="w-16 h-16 mx-auto rounded-full object-cover hidden shadow-sm mb-2">
+                            <i class="fa-solid fa-user text-gray-300 text-3xl mb-2 block" id="icon-bride-photo"></i>
+                            <label class="cursor-pointer bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-sm inline-block w-full">Bride Photo
+                                <input type="file" class="hidden" accept="image/*" onchange="handleImageUpload(this, 'bridePhoto')">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Content/Message Modal -->
+                <div id="modal-content" class="hidden edit-form space-y-4">
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Top Heading</label>
+                    <input type="text" id="ed-heading" placeholder="e.g. We cordially invite you" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Invitation Text</label>
+                    <textarea id="ed-message" rows="4" placeholder="Enter your invitation message here..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none resize-none focus:border-brand-500" oninput="handleEditorInput()"></textarea></div>
+                </div>
+
+                <!-- 3. Quran/Verse Modal -->
+                <div id="modal-quran" class="hidden edit-form space-y-4">
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Arabic Text</label>
+                    <input type="text" id="ed-arabic" placeholder="e.g. وَخَلَقْنَاكُمْ أَزْوَاجًا" class="w-full font-arabic bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-lg text-right focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Translation</label>
+                    <input type="text" id="ed-translation" placeholder="e.g. And We created you in pairs" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                </div>
+
+                <!-- 4. Main Event Modal -->
+                <div id="modal-mainEvent" class="hidden edit-form space-y-4">
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Event Title</label>
+                    <input type="text" id="ed-me-title" placeholder="e.g. Nikah Ceremony" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="block text-xs font-medium text-gray-500 mb-1">Date</label>
+                        <input type="text" id="ed-me-date" placeholder="e.g. 20 Sept 2026" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                        <div><label class="block text-xs font-medium text-gray-500 mb-1">Time</label>
+                        <input type="text" id="ed-me-time" placeholder="e.g. 11:00 AM" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    </div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Venue Name</label>
+                    <input type="text" id="ed-me-venue" placeholder="e.g. Grand Auditorium" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Short Address</label>
+                    <input type="text" id="ed-me-address" placeholder="e.g. Calicut, Kerala" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Google Maps URL</label>
+                    <input type="url" id="ed-me-map" placeholder="https://maps.google.com/..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                </div>
+
+                <!-- 5. Themes & Colors Modal (Global) -->
+                <div id="modal-themes" class="hidden edit-form space-y-6">
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Customize Colors</h4>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="bg-gray-50 p-2 rounded-lg border border-gray-200 flex flex-col items-center">
+                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Primary</label>
+                                <input type="color" id="ed-color-primary" class="w-8 h-8 rounded cursor-pointer border-0 p-0" onchange="handleEditorInput()">
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded-lg border border-gray-200 flex flex-col items-center">
+                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Background</label>
+                                <input type="color" id="ed-color-bg" class="w-8 h-8 rounded cursor-pointer border-0 p-0" onchange="handleEditorInput()">
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded-lg border border-gray-200 flex flex-col items-center">
+                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Text</label>
+                                <input type="color" id="ed-color-text" class="w-8 h-8 rounded cursor-pointer border-0 p-0" onchange="handleEditorInput()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center pt-4 border-t border-gray-100">
+                        <button onclick="deleteInvitation()" class="text-xs text-red-500 font-bold py-2 px-4 bg-red-50 rounded-full hover:bg-red-100 transition"><i class="fa-solid fa-trash mr-1"></i> Delete Invitation</button>
+                    </div>
+                </div>
+                
+                <!-- 6. Layers Modal (Toggle Visibility) -->
+                <div id="modal-layers" class="hidden edit-form space-y-4">
+                    <p class="text-xs text-gray-500 mb-4">Turn elements on or off. In Blank Canvas mode, you can drag them freely.</p>
+                    <div class="space-y-2" id="layers-list">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
+                            <span class="text-sm font-medium text-gray-700">Bismillah</span>
+                            <input type="checkbox" id="layer-bismillah" data-key="showBismillah" class="w-5 h-5 rounded text-brand-500" onchange="handleLayerToggle(this)">
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
+                            <span class="text-sm font-medium text-gray-700">Top Heading</span>
+                            <input type="checkbox" id="layer-heading" data-key="showHeading" class="w-5 h-5 rounded text-brand-500" onchange="handleLayerToggle(this)">
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
+                            <span class="text-sm font-medium text-gray-700">Couple Names</span>
+                            <input type="checkbox" id="layer-couple" data-key="showCouple" class="w-5 h-5 rounded text-brand-500" onchange="handleLayerToggle(this)">
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
+                            <span class="text-sm font-medium text-gray-700">Invitation Message</span>
+                            <input type="checkbox" id="layer-message" data-key="showMessage" class="w-5 h-5 rounded text-brand-500" onchange="handleLayerToggle(this)">
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
+                            <span class="text-sm font-medium text-gray-700">Islamic Verse</span>
+                            <input type="checkbox" id="layer-quran" data-key="showQuote" class="w-5 h-5 rounded text-brand-500" onchange="handleLayerToggle(this)">
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
+                            <span class="text-sm font-medium text-gray-700">Main Event</span>
+                            <input type="checkbox" id="layer-event" data-key="showEvent" class="w-5 h-5 rounded text-brand-500" onchange="handleLayerToggle(this)">
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
+                            <span class="text-sm font-medium text-gray-700">Map Button</span>
+                            <input type="checkbox" id="layer-map" data-key="showMap" class="w-5 h-5 rounded text-brand-500" onchange="handleLayerToggle(this)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. View All Modal (Invitations / Templates with Search) -->
+                <div id="modal-view-all" class="hidden edit-form space-y-4">
+                    <div class="sticky top-0 bg-white pb-2 z-10">
+                        <input type="text" id="view-all-search" placeholder="Search..." oninput="handleViewAllSearch(this.value)" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none">
+                    </div>
+                    <div id="view-all-list" class="grid grid-cols-1 gap-4">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="p-4 border-t border-gray-100 bg-gray-50 rounded-b-3xl shrink-0">
+                <button onclick="closeModal()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl hover:bg-black transition active:scale-95 shadow-md">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCp-NKbL_kmB2nzlTv9fSisc2cVuE55p-Q",
+            authDomain: "online-angadi-003.firebaseapp.com",
+            projectId: "online-angadi-003",
+            storageBucket: "online-angadi-003.firebasestorage.app",
+            messagingSenderId: "873906876645",
+            appId: "1:873906876645:web:a730abef1e07da515f640c",
+            measurementId: "G-GH1DZXR5ZP"
+        };
+
+        let app, auth, db;
+        let currentUser = null;
+        let allInvitationsCache = [];
+        
+        const state = {
+            editingId: null,
+            data: null,
+            saveTimeout: null,
+            isEditMode: false,
+            templates: {}
+        };
+
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error("Firebase init failed:", e);
+            showToast("Firebase Config Error.", "error");
+        }
+
+        // ================= TEMPLATE ENGINE =================
+        window.registerTemplate = function(templateObj) {
+            state.templates[templateObj.id] = templateObj;
+            if(document.getElementById('view-editor').classList.contains('active')) updateEditorPreview();
+            if(document.getElementById('view-dashboard').classList.contains('active')) renderTemplatesRow();
+        };
+
+        // Template 1: Blank Canvas (Freeform Drag & Drop Support)
+        window.registerTemplate({
+            id: 'blank-canvas',
+            name: 'Blank Canvas',
+            thumb: 'https://placehold.co/300x400/f8f9fa/cccccc?text=Blank+Canvas',
+            freeform: true, // Enables absolute positioning logic
+            defaults: { colors: { primary: '#000000', bg: '#ffffff', text: '#333333' }, fonts: { heading: "'Poppins', sans-serif" } },
+            render: function(d, isEditMode) {
+                const colors = d.design?.colors || this.defaults.colors;
+                const set = d.settings || {};
+                
+                // Helper for absolute positioning wrapper
+                const wrap = (key, content, hideKey) => {
+                    const isHidden = (hideKey && set[hideKey] === false);
+                    if(isHidden && !isEditMode) return '';
+                    
+                    let style = '';
+                    if(d.design?.positions?.[key]) {
+                        const pos = d.design.positions[key];
+                        style = `position:absolute; left:${pos.x}%; top:${pos.y}%;`;
+                    } else {
+                        // Default center fallback if position is missing
+                        style = `position:absolute; left:50%; top:50%;`;
+                    }
+                    
+                    if(!isEditMode) return `<div class="absolute-pos w-full text-center" style="${style} transform:translate(-50%,-50%);">${content}</div>`;
+                    
+                    return `<div class="editable-block absolute-pos w-max min-w-[200px] text-center ${isHidden ? 'hidden-block' : ''}" data-edit="${key}" style="${style}">
+                                <div class="drag-handle"><i class="fa-solid fa-arrows-up-down-left-right"></i></div>
+                                <div class="edit-badge"><i class="fa-solid fa-pen"></i></div>
+                                ${content}
+                            </div>`;
+                };
+
+                let html = `<div class="w-full min-h-[800px] h-full relative overflow-hidden" style="background-color: ${colors.bg}; color: ${colors.text};">`;
+                
+                html += wrap('content', `<div class="font-arabic text-2xl" style="color: ${colors.primary}">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>`, 'showBismillah');
+                html += wrap('content', `<div class="text-[10px] uppercase font-bold opacity-70">${d.content?.heading || 'Top Heading'}</div>`, 'showHeading');
+                
+                html += wrap('couple', `
+                    <div class="w-full">
+                        <h1 class="text-4xl font-bold" style="color: ${colors.primary}">${d.couple?.groom || 'Groom Name'}</h1>
+                        <span class="text-lg italic opacity-60 block">&</span>
+                        <h1 class="text-4xl font-bold" style="color: ${colors.primary}">${d.couple?.bride || 'Bride Name'}</h1>
+                    </div>
+                `, 'showCouple');
+
+                html += wrap('content', `<p class="text-sm opacity-80 whitespace-pre-line">${d.content?.message || 'Invitation Message'}</p>`, 'showMessage');
+                
+                html += wrap('quran', `
+                    <div class="text-center">
+                        <p class="font-arabic text-xl" style="color: ${colors.primary}">${d.content?.arabicText || 'Arabic Verse'}</p>
+                        <p class="text-[10px] uppercase opacity-60 mt-1">${d.content?.translation || 'Translation'}</p>
+                    </div>
+                `, 'showQuote');
+
+                html += wrap('mainEvent', `
+                    <div class="p-4 bg-black/5 rounded-xl border border-black/10 inline-block w-full max-w-[250px]">
+                        <h3 class="text-xs font-bold uppercase mb-2" style="color: ${colors.primary}">${d.mainEvent?.title || 'Event Title'}</h3>
+                        <div class="font-bold text-sm">${d.mainEvent?.date || 'Date'}</div>
+                        <div class="text-xs opacity-80 mb-2">${d.mainEvent?.time || 'Time'}</div>
+                        <div class="font-bold text-sm">${d.mainEvent?.venue || 'Venue'}</div>
+                        <div class="text-[10px] opacity-70">${d.mainEvent?.address || 'Address'}</div>
+                    </div>
+                `, 'showEvent');
+
+                const mapBtn = (d.mainEvent?.mapUrl && !isEditMode) 
+                    ? `<a href="${d.mainEvent.mapUrl}" target="_blank" class="inline-block text-[10px] uppercase font-bold border-2 px-6 py-2 rounded-full" style="border-color: ${colors.primary}; color: ${colors.primary}">Map</a>`
+                    : (isEditMode ? `<div class="inline-block text-[10px] uppercase font-bold border-2 px-6 py-2 rounded-full" style="border-color: ${colors.primary}; color: ${colors.primary}">Map Button</div>` : '');
+                
+                html += wrap('mainEvent', mapBtn, 'showMap');
+                
+                html += `</div>`;
+                return html;
+            }
+        });
+
+        // Template 2: Default Minimal (Structured Layout)
+        window.registerTemplate({
+            id: 'default-minimal',
+            name: 'Classic Minimal',
+            thumb: 'https://images.unsplash.com/photo-1523688881242-6e2a8656a894?q=80&w=300&auto=format&fit=crop',
+            defaults: { colors: { primary: '#B38A4A', bg: '#FFF9F0', text: '#1F2937' }, fonts: { heading: "'Playfair Display', serif" } },
+            render: function(d, isEditMode) {
+                const colors = d.design?.colors || this.defaults.colors;
+                const fonts = d.design?.fonts || this.defaults.fonts;
+                const set = d.settings || {};
+                
+                const wrap = (key, content, hideKey) => {
+                    const isHidden = (hideKey && set[hideKey] === false);
+                    if(!isEditMode) return isHidden ? '' : content;
+                    return `<div class="editable-block w-full ${isHidden ? 'hidden-block' : ''}" data-edit="${key}">
+                                <div class="edit-badge"><i class="fa-solid fa-pen"></i></div>
+                                ${content}
+                            </div>`;
+                };
+
+                let html = `<div class="w-full min-h-[800px] h-full relative p-8 flex flex-col items-center text-center font-sans" style="background-color: ${colors.bg}; color: ${colors.text};">`;
+                html += `<div class="absolute inset-4 border-2 rounded-2xl pointer-events-none opacity-40" style="border-color: ${colors.primary};"></div>`;
+                html += `<div class="relative z-10 w-full flex flex-col items-center py-6 my-auto">`;
+                
+                html += wrap('content', `<div class="font-arabic text-3xl mb-8" style="color: ${colors.primary}">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>`, 'showBismillah');
+                html += wrap('content', `<div class="text-[10px] uppercase tracking-[0.3em] mb-6 font-semibold opacity-70">${d.content?.heading || 'Top Heading'}</div>`, 'showHeading');
+                
+                html += wrap('couple', `
+                    <div class="w-full mb-8">
+                        <h1 class="text-4xl font-bold mb-2" style="font-family: ${fonts.heading}; color: ${colors.primary}">${d.couple?.groom || 'Groom Name'}</h1>
+                        <span class="text-xl italic font-serif opacity-60 my-1 block">&</span>
+                        <h1 class="text-4xl font-bold mt-2" style="font-family: ${fonts.heading}; color: ${colors.primary}">${d.couple?.bride || 'Bride Name'}</h1>
+                    </div>
+                `, 'showCouple');
+
+                html += wrap('content', `<p class="text-sm leading-relaxed mb-8 px-4 opacity-80 whitespace-pre-line">${d.content?.message || 'Message'}</p>`, 'showMessage');
+                
+                html += wrap('quran', `
+                    <div class="my-6 py-5 border-y border-opacity-20 w-3/4 mx-auto" style="border-color: ${colors.primary}">
+                        <p class="font-arabic text-2xl mb-2" style="color: ${colors.primary}">${d.content?.arabicText || 'Arabic Text'}</p>
+                        <p class="text-[10px] uppercase tracking-wider opacity-60 mt-2">${d.content?.translation || 'Translation'}</p>
+                    </div>
+                `, 'showQuote');
+
+                html += wrap('mainEvent', `
+                    <div class="bg-white/60 backdrop-blur-md rounded-2xl p-6 w-full max-w-sm my-6 shadow-sm border border-black/5">
+                        <h3 class="text-xs font-bold uppercase tracking-widest mb-3" style="color: ${colors.primary}">${d.mainEvent?.title || 'Event Title'}</h3>
+                        <div class="font-semibold text-lg mb-1">${d.mainEvent?.date || 'Date'}</div>
+                        <div class="text-sm opacity-80 mb-4 font-medium">${d.mainEvent?.time || 'Time'}</div>
+                        <div class="font-bold">${d.mainEvent?.venue || 'Venue Name'}</div>
+                        <div class="text-xs opacity-60 mt-1 mb-4">${d.mainEvent?.address || 'Address'}</div>
+                        ${(set.showMap !== false && d.mainEvent?.mapUrl && !isEditMode) ? `<a href="${d.mainEvent.mapUrl}" target="_blank" class="inline-block text-[10px] uppercase font-bold border-2 px-6 py-2.5 rounded-full" style="border-color: ${colors.primary}; color: ${colors.primary}">Get Directions</a>` : ''}
+                        ${(set.showMap !== false && isEditMode) ? `<div class="inline-block text-[10px] uppercase font-bold border-2 px-6 py-2.5 rounded-full" style="border-color: ${colors.primary}; color: ${colors.primary}">Map Button</div>` : ''}
+                    </div>
+                `, 'showEvent');
+
+                html += `</div></div>`;
+                return html;
+            }
+        });
+
+        // Load external templates dynamically
+        async function loadExternalTemplates() {
+            try {
+                const res = await fetch('templates/registry.json');
+                if(res.ok) {
+                    const files = await res.json();
+                    for(let file of files) {
+                        const script = document.createElement('script');
+                        script.src = `templates/${file}`;
+                        document.head.appendChild(script);
+                    }
+                }
+            } catch(e) { console.log("External templates not found. Using defaults."); }
+        }
+
+        // ================= ROUTING & AUTH =================
+        function handleRoute() {
+            const hash = window.location.hash || '#/';
+            
+            // Hide all views first to prevent overlap
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+                el.style.display = 'none'; 
+            });
+
+            const showView = (id) => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.style.display = 'flex';
+                    setTimeout(() => el.classList.add('active'), 50); 
+                }
+            };
+
+            if (hash === '#/') {
+                if (currentUser) window.location.hash = '#dashboard';
+                else showView('view-login');
+            } 
+            else if (hash === '#dashboard') {
+                if (!currentUser) window.location.hash = '#/';
+                else { showView('view-dashboard'); loadDashboard(); state.isEditMode = false; }
+            } 
+            else if (hash.startsWith('#editor/')) {
+                if (!currentUser) window.location.hash = '#/';
+                else { 
+                    state.editingId = hash.replace('#editor/', ''); 
+                    state.isEditMode = true;
+                    showView('view-editor'); 
+                    loadEditor(); 
+                }
+            }
+            else if (hash.startsWith('#/i/')) {
+                const code = hash.replace('#/i/', '');
+                state.isEditMode = false;
+                showView('view-public');
+                loadPublicInvitation(code);
+            }
+        }
+        window.addEventListener('hashchange', handleRoute);
+
+        if(auth) {
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                if (user) {
+                    document.getElementById('dash-greeting').innerText = `Welcome, ${user.displayName ? user.displayName.split(' ')[0] : 'User'}!`;
+                    if(user.photoURL) {
+                        const img = document.getElementById('user-avatar');
+                        img.src = user.photoURL;
+                        img.classList.remove('hidden');
+                    }
+                }
+                handleRoute();
+                loadExternalTemplates();
+            });
+        }
+
+        // Changed to signInWithPopup to prevent redirect loop issues on mobile
+        document.getElementById('btn-google-login')?.addEventListener('click', async () => {
+            showLoader("Signing in securely...");
+            try {
+                await signInWithPopup(auth, new GoogleAuthProvider());
+                hideLoader();
+            } catch (error) {
+                hideLoader();
+                console.error("Login Error:", error);
+                showToast("Login failed. Check console for details.", "error");
+            }
+        });
+
+        document.getElementById('btn-logout')?.addEventListener('click', () => signOut(auth).then(() => window.location.hash = '#/'));
+
+        // ================= DASHBOARD =================
+        async function loadDashboard() {
+            showLoader();
+            try {
+                const q = query(collection(db, "invitations"), where("ownerUid", "==", currentUser.uid));
+                const snap = await getDocs(q);
+                allInvitationsCache = [];
+                snap.forEach(docSnap => allInvitationsCache.push({ id: docSnap.id, ...docSnap.data() }));
+
+                renderInvitationsRow(allInvitationsCache);
+                renderTemplatesRow();
+            } catch (e) { showToast("Error loading dashboard", "error"); }
+            hideLoader();
+        }
+
+        function renderInvitationsRow(items) {
+            const row = document.getElementById('invitations-row');
+            row.innerHTML = '';
+            if (items.length === 0) {
+                row.innerHTML = `<div class="text-center py-6 w-full text-gray-400 text-sm">No invitations yet. Click create to start.</div>`;
+                return;
+            }
+            items.forEach((data) => {
+                const id = data.id || data.code;
+                const t = state.templates[data.templateId] || state.templates['blank-canvas'];
+                const isPub = data.status === 'published';
+                
+                row.innerHTML += `
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-lg transition-all min-w-[280px] max-w-[280px] shrink-0 snap-start">
+                        <div class="h-36 bg-gray-100 bg-cover bg-center border-b border-gray-50 relative" style="background-image: url('${t?.thumb}')">
+                            <div class="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase shadow-sm ${isPub ? 'text-green-600' : 'text-gray-500'}">${isPub ? '● Live' : 'Draft'}</div>
+                        </div>
+                        <div class="p-4 flex flex-col flex-grow">
+                            <h3 class="font-serif font-bold text-base text-gray-900 truncate">${data.couple?.groom || 'Groom'} & ${data.couple?.bride || 'Bride'}</h3>
+                            <p class="text-[10px] text-gray-400 mt-0.5 mb-3"><i class="fa-solid fa-link"></i> /i/${id}</p>
+                            <div class="mt-auto grid grid-cols-2 gap-2">
+                                <a href="#editor/${id}" class="text-center bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 rounded-xl text-xs font-bold transition">Edit</a>
+                                ${isPub ? `<a href="#/i/${id}" target="_blank" class="text-center bg-brand-50 hover:bg-brand-100 text-brand-700 py-2 rounded-xl text-xs font-bold transition">View</a>` : `<button disabled class="text-center bg-gray-50 text-gray-400 py-2 rounded-xl text-xs font-bold opacity-50">View</button>`}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderTemplatesRow() {
+            const row = document.getElementById('templates-row');
+            row.innerHTML = '';
+            const templates = Object.values(state.templates);
+            if (templates.length === 0) {
+                row.innerHTML = `<div class="text-center py-6 w-full text-gray-400 text-sm">No templates available.</div>`;
+                return;
+            }
+            templates.forEach((t) => {
+                row.innerHTML += `
+                    <div onclick="createNewInvitation('${t.id}')" class="cursor-pointer bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-lg transition-all min-w-[240px] max-w-[240px] shrink-0 snap-start active:scale-95">
+                        <div class="h-36 bg-cover bg-center bg-gray-100" style="background-image: url('${t.thumb}')"></div>
+                        <div class="p-3 text-center">
+                            <h4 class="font-bold text-gray-800 text-sm truncate">${t.name}</h4>
+                            <p class="text-[10px] text-gray-400 mt-1">Click to use</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // ================= CREATION LOGIC =================
+        function generateSecureCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+            const array = new Uint32Array(5);
+            window.crypto.getRandomValues(array);
+            let result = '';
+            for (let i = 0; i < 5; i++) result += chars[array[i] % chars.length];
+            return result;
+        }
+
+        window.createNewInvitation = async function(templateId = 'blank-canvas') {
+            showLoader("Setting up workspace...");
+            try {
+                const code = generateSecureCode();
+                
+                // Initial Default Data (No dummy names)
+                const initData = {
+                    ownerUid: currentUser.uid,
+                    code: code,
+                    status: 'draft',
+                    templateId: templateId,
+                    couple: { groom: '', bride: '', groomPhoto: null, bridePhoto: null },
+                    mainEvent: { title: '', date: '', time: '', venue: '', address: '', mapUrl: '' },
+                    extraEvents: [],
+                    content: { heading: '', message: '', arabicText: '', translation: '' },
+                    design: { colors: {}, fonts: {}, positions: {} }, 
+                    settings: { showBismillah: true, showHeading: true, showCouple: true, showMessage: true, showQuote: true, showEvent: true, showMap: true },
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                };
+
+                // Add default center positions for blank canvas so elements don't stack at 0,0
+                if(templateId === 'blank-canvas') {
+                    initData.design.positions = {
+                        'content-bismillah': {x: 50, y: 15},
+                        'content-heading': {x: 50, y: 25},
+                        'couple': {x: 50, y: 40},
+                        'content-message': {x: 50, y: 60},
+                        'quran': {x: 50, y: 75},
+                        'mainEvent': {x: 50, y: 90}
+                    };
+                }
+
+                await setDoc(doc(db, "invitations", code), initData);
+                window.location.hash = `#editor/${code}`;
+            } catch (error) {
+                console.error(error);
+                showToast("Failed to create invitation", "error");
+            } finally { hideLoader(); }
+        }
+
+        // ================= EDITOR LOGIC =================
+        async function loadEditor() {
+            showLoader();
+            try {
+                const docSnap = await getDoc(doc(db, "invitations", state.editingId));
+                if (!docSnap.exists() || docSnap.data().ownerUid !== currentUser.uid) {
+                    showToast("Access Denied", "error");
+                    window.location.hash = '#dashboard'; return;
+                }
+                state.data = docSnap.data();
+                
+                // Set default settings if missing
+                if(!state.data.settings) {
+                    state.data.settings = { showBismillah: true, showHeading: true, showCouple: true, showMessage: true, showQuote: true, showEvent: true, showMap: true };
+                }
+                
+                const hint = document.getElementById('editor-hint');
+                hint.classList.remove('opacity-0');
+                setTimeout(() => hint.classList.add('opacity-0'), 4000);
+
+                bindDataToForms();
+                updateEditorPreview();
+            } catch(e) { showToast("Error loading editor", "error"); }
+            hideLoader();
+        }
+
+        function updateEditorPreview() {
+            const container = document.getElementById('renderer-output-editor');
+            const t = state.templates[state.data.templateId] || state.templates['blank-canvas'];
+            
+            // Renderer architecture supports any HTML injected by the template script
+            container.innerHTML = t.render(state.data, true);
+            
+            attachEditListeners();
+            if(t.freeform) initDragDrop(); // Attach drag drop listeners only for freeform templates
+        }
+
+        function attachEditListeners() {
+            const blocks = document.querySelectorAll('.editable-block');
+            blocks.forEach(block => {
+                block.onclick = (e) => {
+                    // Prevent trigger if clicking on the drag handle
+                    if(e.target.closest('.drag-handle')) return; 
+                    e.stopPropagation();
+                    const editKey = block.getAttribute('data-edit');
+                    
+                    // Route clicks to appropriate modals based on data-edit key mapping
+                    if(editKey.includes('content')) openModal('modal-content');
+                    else if(editKey === 'couple') openModal('modal-couple');
+                    else if(editKey === 'quran') openModal('modal-quran');
+                    else if(editKey === 'mainEvent') openModal('modal-mainEvent');
+                    else openModal('modal-' + editKey);
+                };
+            });
+        }
+
+        // --- Drag and Drop Logic ---
+        let isDragging = false;
+        let dragTarget = null;
+        let dragStartX, dragStartY;
+        let initialX, initialY;
+
+        function initDragDrop() {
+            const workspace = document.getElementById('visual-editor-canvas');
+            // Remove old listeners to prevent duplicates
+            workspace.removeEventListener('mousedown', startDrag);
+            workspace.removeEventListener('touchstart', startDrag);
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('touchmove', drag);
+            document.removeEventListener('mouseup', endDrag);
+            document.removeEventListener('touchend', endDrag);
+
+            // Add new listeners
+            workspace.addEventListener('mousedown', startDrag, {passive: false});
+            workspace.addEventListener('touchstart', startDrag, {passive: false});
+            document.addEventListener('mousemove', drag, {passive: false});
+            document.addEventListener('touchmove', drag, {passive: false});
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
+        }
+
+        function startDrag(e) {
+            if(e.target.closest('.drag-handle')) {
+                isDragging = true;
+                dragTarget = e.target.closest('.editable-block');
+                e.preventDefault();
+
+                const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+                const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+                const rect = dragTarget.getBoundingClientRect();
+                const parentRect = dragTarget.parentElement.getBoundingClientRect();
+
+                // Calculate current left/top in percentage
+                initialX = ((rect.left + (rect.width/2) - parentRect.left) / parentRect.width) * 100;
+                initialY = ((rect.top + (rect.height/2) - parentRect.top) / parentRect.height) * 100;
+
+                dragStartX = clientX;
+                dragStartY = clientY;
+                dragTarget.style.zIndex = 50;
+                dragTarget.style.transition = 'none';
+            }
+        }
+
+        function drag(e) {
+            if(!isDragging || !dragTarget) return;
+            e.preventDefault();
+
+            const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+
+            const dx = clientX - dragStartX;
+            const dy = clientY - dragStartY;
+
+            const parentRect = dragTarget.parentElement.getBoundingClientRect();
+            const dxPercent = (dx / parentRect.width) * 100;
+            const dyPercent = (dy / parentRect.height) * 100;
+
+            let newX = initialX + dxPercent;
+            let newY = initialY + dyPercent;
+
+            dragTarget.style.left = `${newX}%`;
+            dragTarget.style.top = `${newY}%`;
+        }
+
+        function endDrag(e) {
+            if(!isDragging || !dragTarget) return;
+            isDragging = false;
+            dragTarget.style.zIndex = '';
+            dragTarget.style.transition = '';
+
+            const key = dragTarget.getAttribute('data-edit');
+            if(!state.data.design.positions) state.data.design.positions = {};
+
+            state.data.design.positions[key] = {
+                x: parseFloat(dragTarget.style.left),
+                y: parseFloat(dragTarget.style.top)
+            };
+
+            dragTarget = null;
+            // Auto save position
+            clearTimeout(state.saveTimeout);
+            state.saveTimeout = setTimeout(saveToFirestore, 1000);
+        }
+
+        // ================= MODALS & DATA BINDING =================
+        window.openModal = function(contentId) {
+            document.getElementById('modal-container').classList.remove('hidden');
+            setTimeout(() => { document.getElementById('modal-content-wrapper').classList.remove('translate-y-full'); }, 10);
+            document.querySelectorAll('.edit-form').forEach(el => el.classList.add('hidden'));
+            
+            const target = document.getElementById(contentId);
+            if(target) target.classList.remove('hidden');
+            
+            const titles = { 'modal-couple': 'Edit Names', 'modal-content': 'Edit Messages', 'modal-quran': 'Edit Verse', 'modal-mainEvent': 'Event Details', 'modal-themes': 'Theme Options', 'modal-layers': 'Layers & Visibility', 'modal-view-all': 'View All' };
+            document.getElementById('modal-title').innerText = titles[contentId] || 'Edit';
+        }
+
+        window.closeModal = function() {
+            document.getElementById('modal-content-wrapper').classList.add('translate-y-full');
+            setTimeout(() => { document.getElementById('modal-container').classList.add('hidden'); }, 300);
+        }
+        document.getElementById('modal-container').addEventListener('click', (e) => { if(e.target === document.getElementById('modal-container')) closeModal(); });
+
+        function bindDataToForms() {
+            const d = state.data;
+            document.getElementById('ed-groom').value = d.couple?.groom || '';
+            document.getElementById('ed-bride').value = d.couple?.bride || '';
+            document.getElementById('ed-heading').value = d.content?.heading || '';
+            document.getElementById('ed-message').value = d.content?.message || '';
+            document.getElementById('ed-arabic').value = d.content?.arabicText || '';
+            document.getElementById('ed-translation').value = d.content?.translation || '';
+            
+            document.getElementById('ed-me-title').value = d.mainEvent?.title || '';
+            document.getElementById('ed-me-date').value = d.mainEvent?.date || '';
+            document.getElementById('ed-me-time').value = d.mainEvent?.time || '';
+            document.getElementById('ed-me-venue').value = d.mainEvent?.venue || '';
+            document.getElementById('ed-me-address').value = d.mainEvent?.address || '';
+            document.getElementById('ed-me-map').value = d.mainEvent?.mapUrl || '';
+            
+            // Layer bindings
+            document.querySelectorAll('#layers-list input[type="checkbox"]').forEach(checkbox => {
+                const key = checkbox.getAttribute('data-key');
+                checkbox.checked = d.settings?.[key] !== false; // Default true
+            });
+            
+            const t = state.templates[d.templateId] || state.templates['blank-canvas'];
+            document.getElementById('ed-color-primary').value = d.design?.colors?.primary || t.defaults?.colors?.primary || '#000000';
+            document.getElementById('ed-color-bg').value = d.design?.colors?.bg || t.defaults?.colors?.bg || '#ffffff';
+            document.getElementById('ed-color-text').value = d.design?.colors?.text || t.defaults?.colors?.text || '#000000';
+            
+            const isPub = d.status === 'published';
+            document.getElementById('toggle-publish').checked = isPub;
+            document.getElementById('publish-status-text').innerText = isPub ? 'Published' : 'Draft';
+            
+            ['groomPhoto', 'bridePhoto'].forEach(key => {
+                if(d.couple?.[key]) {
+                    document.getElementById(`prev-${key.replace('Photo','')}-photo`).src = d.couple[key];
+                    document.getElementById(`prev-${key.replace('Photo','')}-photo`).classList.remove('hidden');
+                    document.getElementById(`icon-${key.replace('Photo','')}-photo`).classList.add('hidden');
+                }
+            });
+        }
+
+        window.handleLayerToggle = function(checkbox) {
+            const key = checkbox.getAttribute('data-key');
+            state.data.settings[key] = checkbox.checked;
+            handleEditorInput();
+        }
+
+        window.handleEditorInput = function() {
+            state.data.couple.groom = document.getElementById('ed-groom').value;
+            state.data.couple.bride = document.getElementById('ed-bride').value;
+            state.data.content.heading = document.getElementById('ed-heading').value;
+            state.data.content.message = document.getElementById('ed-message').value;
+            
+            state.data.content.arabicText = document.getElementById('ed-arabic').value;
+            state.data.content.translation = document.getElementById('ed-translation').value;
+            
+            state.data.mainEvent.title = document.getElementById('ed-me-title').value;
+            state.data.mainEvent.date = document.getElementById('ed-me-date').value;
+            state.data.mainEvent.time = document.getElementById('ed-me-time').value;
+            state.data.mainEvent.venue = document.getElementById('ed-me-venue').value;
+            state.data.mainEvent.address = document.getElementById('ed-me-address').value;
+            state.data.mainEvent.mapUrl = document.getElementById('ed-me-map').value;
+            
+            state.data.design.colors.primary = document.getElementById('ed-color-primary').value;
+            state.data.design.colors.bg = document.getElementById('ed-color-bg').value;
+            state.data.design.colors.text = document.getElementById('ed-color-text').value;
+            
+            updateEditorPreview();
+            
+            // Debounced auto-save
+            clearTimeout(state.saveTimeout);
+            document.getElementById('save-status').classList.remove('opacity-100');
+            state.saveTimeout = setTimeout(saveToFirestore, 800);
+        }
+
+        async function saveToFirestore() {
+            try {
+                state.data.updatedAt = serverTimestamp();
+                await updateDoc(doc(db, "invitations", state.editingId), state.data);
+                const badge = document.getElementById('save-status');
+                badge.classList.add('opacity-100');
+                setTimeout(() => badge.classList.remove('opacity-100'), 2000);
+            } catch(e) { showToast("Failed to save auto-save data", "error"); }
+        }
+
+        window.togglePublishStatus = async function(checkbox) {
+            const newStatus = checkbox.checked ? 'published' : 'draft';
+            document.getElementById('publish-status-text').innerText = checkbox.checked ? 'Published' : 'Draft';
+            state.data.status = newStatus;
+            try {
+                await updateDoc(doc(db, "invitations", state.editingId), { status: newStatus });
+                showToast(checkbox.checked ? "Live!" : "Draft mode", "success");
+            } catch(e) { checkbox.checked = !checkbox.checked; showToast("Update failed", "error"); }
+        }
+
+        window.deleteInvitation = async function() {
+            if(confirm("Permanently delete this invitation?")) {
+                try {
+                    await deleteDoc(doc(db, "invitations", state.editingId));
+                    closeModal();
+                    window.location.hash = '#dashboard';
+                } catch(e) { showToast("Error deleting", "error"); }
+            }
+        }
+
+        // Image compress and store to Firestore DB as Base64 (Free tier friendly)
+        window.handleImageUpload = async function(input, targetField) {
+            const file = input.files[0];
+            if(!file) return;
+            try {
+                showLoader("Compressing image...");
+                const base64Data = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.src = e.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width, height = img.height;
+                            const maxDim = 400; // Limit dimensions
+                            if (width > height && width > maxDim) { height = Math.round(height * (maxDim / width)); width = maxDim; } 
+                            else if (height > width && height > maxDim) { width = Math.round(width * (maxDim / height)); height = maxDim; }
+                            canvas.width = width; canvas.height = height;
+                            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                            
+                            let quality = 0.7;
+                            let b64 = canvas.toDataURL('image/jpeg', quality);
+                            // Compress below ~150KB
+                            while (Math.round((b64.length * 3) / 4 / 1024) > 150 && quality > 0.1) {
+                                quality -= 0.1; 
+                                b64 = canvas.toDataURL('image/jpeg', quality);
+                            }
+                            resolve(b64);
+                        };
+                    };
+                });
+                
+                state.data.couple[targetField] = base64Data;
+                bindDataToForms();
+                handleEditorInput(); 
+                showToast("Photo uploaded successfully!", "success");
+            } catch(e) { showToast("Photo processing failed", "error"); } 
+            finally { hideLoader(); }
+        }
+
+        // ================= PUBLIC VIEW =================
+        async function loadPublicInvitation(code) {
+            showLoader();
+            try {
+                const docSnap = await getDoc(doc(db, "invitations", code));
+                if (!docSnap.exists()) { document.body.innerHTML = "<h1 class='text-center mt-20 text-xl font-bold'>Invitation Not Found</h1>"; return; }
+                const data = docSnap.data();
+                if (data.status !== 'published' && (!currentUser || currentUser.uid !== data.ownerUid)) {
+                     document.body.innerHTML = "<h1 class='text-center mt-20 text-xl font-bold text-gray-500'>Invitation is Private</h1>"; return;
+                }
+                const t = state.templates[data.templateId] || state.templates['blank-canvas'];
+                document.getElementById('renderer-output-public').innerHTML = t.render(data, false);
+            } catch (e) { document.body.innerHTML = "Error loading invitation."; }
+            hideLoader();
+        }
+
+        // ================= VIEW ALL LOGIC =================
+        window.openViewAllModal = function(type) {
+            openModal('modal-view-all');
+            document.getElementById('view-all-search').value = '';
+            if(type === 'invitations') {
+                document.getElementById('modal-title').innerText = 'All Invitations';
+                renderViewAllList(allInvitationsCache, 'invitations');
+            } else {
+                document.getElementById('modal-title').innerText = 'All Templates';
+                renderViewAllList(Object.values(state.templates), 'templates');
+            }
+        }
+
+        window.handleViewAllSearch = function(keyword) {
+            const queryText = keyword.toLowerCase();
+            const title = document.getElementById('modal-title').innerText;
+            if(title.includes('Invitations')) {
+                const filtered = allInvitationsCache.filter(item => 
+                    (item.couple?.groom && item.couple.groom.toLowerCase().includes(queryText)) ||
+                    (item.couple?.bride && item.couple.bride.toLowerCase().includes(queryText)) ||
+                    (item.code && item.code.toLowerCase().includes(queryText))
+                );
+                renderViewAllList(filtered, 'invitations');
+            } else {
+                const filtered = Object.values(state.templates).filter(item => 
+                    item.name.toLowerCase().includes(queryText)
+                );
+                renderViewAllList(filtered, 'templates');
+            }
+        }
+
+        function renderViewAllList(items, type) {
+            const list = document.getElementById('view-all-list');
+            list.innerHTML = '';
+            if(items.length === 0) {
+                list.innerHTML = `<p class="text-center text-gray-400 py-6 text-sm">No items found.</p>`;
+                return;
+            }
+            items.forEach(data => {
+                if(type === 'invitations') {
+                    const id = data.id || data.code;
+                    const isPub = data.status === 'published';
+                    list.innerHTML += `
+                        <div class="bg-gray-50 p-4 rounded-2xl flex items-center justify-between border border-gray-200">
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-sm">${data.couple?.groom || 'Groom'} & ${data.couple?.bride || 'Bride'}</h4>
+                                <span class="text-[10px] ${isPub ? 'text-green-600' : 'text-gray-500'} font-bold">${isPub ? '● Published' : 'Draft'}</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="#editor/${id}" onclick="closeModal()" class="bg-white px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-700">Edit</a>
+                                ${isPub ? `<a href="#/i/${id}" target="_blank" class="bg-brand-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold">View</a>` : ''}
+                            </div>
+                        </div>`;
+                } else {
+                    list.innerHTML += `
+                        <div onclick="createNewInvitation('${data.id}'); closeModal();" class="cursor-pointer bg-gray-50 p-3 rounded-2xl flex items-center gap-4 border border-gray-200 active:scale-95 transition">
+                            <div class="w-16 h-16 rounded-xl bg-cover bg-center shrink-0" style="background-image: url('${data.thumb}')"></div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-sm">${data.name}</h4>
+                                <p class="text-[10px] text-brand-500 font-bold mt-1">Click to use template</p>
+                            </div>
+                        </div>`;
+                }
+            });
+        }
+
+        function showLoader(m="Loading...") { document.getElementById('loader-text').innerText = m; document.getElementById('global-loader').classList.remove('hidden'); }
+        function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
+        function showToast(m, t='info') {
+            const c = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = `toast ${t === 'error' ? 'bg-red-500' : t === 'success' ? 'bg-green-600' : 'bg-gray-900'}`;
+            el.innerHTML = m; c.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => setTimeout(handleRoute, 100)); 
+    </script>
+</body>
+</html>
