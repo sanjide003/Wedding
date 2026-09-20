@@ -59,10 +59,16 @@
         .template-card { position: relative; width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; background-size: cover; background-position: center; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .tab-btn.active { border-bottom: 2px solid #B38A4A; color: #B38A4A; font-weight: 500; }
+        .tab-btn { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px 0; color: #6b7280; font-size: 11px; font-weight: 500; transition: all 0.2s; }
+        .tab-btn.active { color: #B38A4A; }
+        .tab-btn i { font-size: 18px; }
+        
+        /* Mobile Preview Modal Animation */
+        #mobile-preview-modal { transition: transform 0.3s ease-in-out; }
+        .preview-open { transform: translateY(0) !important; }
     </style>
 </head>
-<body class="antialiased h-screen w-screen overflow-hidden flex flex-col">
+<body class="antialiased h-screen w-screen overflow-hidden flex flex-col bg-gray-50">
 
     <!-- Global Loader Overlay -->
     <div id="global-loader" class="fixed inset-0 bg-white/90 z-[100] flex flex-col items-center justify-center hidden backdrop-blur-sm transition-opacity">
@@ -144,50 +150,40 @@
     </div>
 
     <!-- 3. EDITOR VIEW -->
-    <div id="view-editor" class="view-section h-full w-full bg-gray-50 flex flex-col">
-        <!-- Editor Nav -->
+    <div id="view-editor" class="view-section h-full w-full bg-gray-50 flex flex-col relative">
+        <!-- Editor Nav (Top) -->
         <nav class="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-4 shrink-0 shadow-sm z-20">
             <div class="flex items-center gap-4">
-                <button onclick="window.location.hash='#dashboard'" class="text-gray-500 hover:text-gray-900 text-sm font-medium"><i class="fa-solid fa-arrow-left mr-2"></i>Back</button>
+                <button onclick="window.location.hash='#dashboard'" class="text-gray-500 hover:text-gray-900 text-sm font-medium"><i class="fa-solid fa-arrow-left mr-2"></i><span class="hidden sm:inline">Back</span></button>
                 <div class="h-4 w-px bg-gray-300"></div>
-                <div class="text-xs text-gray-400 font-mono" id="editor-code-badge"></div>
+                <div class="text-[10px] sm:text-xs text-gray-400 font-mono" id="editor-code-badge"></div>
             </div>
-            <div class="flex items-center gap-3">
-                <span id="save-status" class="text-xs text-gray-400 flex items-center transition-opacity opacity-0"><i class="fa-solid fa-check text-green-500 mr-1"></i>Saved</span>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <span id="save-status" class="text-[10px] sm:text-xs text-gray-400 flex items-center transition-opacity opacity-0"><i class="fa-solid fa-check text-green-500 mr-1"></i>Saved</span>
                 
                 <!-- Status Toggle -->
                 <div class="flex items-center gap-2 bg-gray-100 rounded-lg px-2 py-1">
-                    <span id="publish-status-text" class="text-xs font-medium text-gray-600">Draft</span>
+                    <span id="publish-status-text" class="text-[10px] sm:text-xs font-medium text-gray-600">Draft</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggle-publish" class="sr-only peer" onchange="togglePublishStatus(this)">
-                        <div class="w-8 h-4 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-500"></div>
+                        <div class="w-7 h-4 sm:w-8 sm:h-4 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-500"></div>
                     </label>
                 </div>
             </div>
         </nav>
 
-        <!-- Editor Workspace -->
-        <div class="flex-grow flex flex-col-reverse lg:flex-row overflow-hidden">
+        <!-- Editor Workspace (Mobile First) -->
+        <div class="flex-grow flex flex-col lg:flex-row overflow-hidden relative">
             
-            <!-- Controls Panel -->
-            <div class="w-full lg:w-[400px] bg-white border-r border-gray-200 flex flex-col h-[50vh] lg:h-full shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] lg:shadow-none z-10">
-                
-                <!-- Tabs -->
-                <div class="flex overflow-x-auto hide-scrollbar border-b border-gray-100 px-2 shrink-0 bg-white">
-                    <button class="tab-btn active px-4 py-3 text-sm text-gray-500 whitespace-nowrap" onclick="switchTab('tab-template')"><i class="fa-solid fa-layer-group mr-1.5"></i>Template</button>
-                    <button class="tab-btn px-4 py-3 text-sm text-gray-500 whitespace-nowrap" onclick="switchTab('tab-content')"><i class="fa-solid fa-pen-nib mr-1.5"></i>Content</button>
-                    <button class="tab-btn px-4 py-3 text-sm text-gray-500 whitespace-nowrap" onclick="switchTab('tab-events')"><i class="fa-regular fa-calendar mr-1.5"></i>Events</button>
-                    <button class="tab-btn px-4 py-3 text-sm text-gray-500 whitespace-nowrap" onclick="switchTab('tab-design')"><i class="fa-solid fa-palette mr-1.5"></i>Design</button>
-                    <button class="tab-btn px-4 py-3 text-sm text-gray-500 whitespace-nowrap" onclick="switchTab('tab-photos')"><i class="fa-regular fa-image mr-1.5"></i>Photos</button>
-                </div>
-
+            <!-- Controls Panel (Scrollable Main Area) -->
+            <div class="w-full lg:w-[450px] bg-white flex flex-col h-full shrink-0 z-10 pb-[70px] lg:pb-0 overflow-y-auto">
                 <!-- Tab Contents -->
-                <div class="flex-grow overflow-y-auto p-5 space-y-6">
+                <div class="flex-grow p-4 sm:p-5 space-y-6">
                     
                     <!-- TEMPLATE TAB -->
                     <div id="tab-template" class="tab-content active">
-                        <h3 class="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider">Choose Theme</h3>
-                        <div class="grid grid-cols-2 gap-3" id="template-list-container">
+                        <h3 class="text-xs font-bold text-gray-800 mb-4 uppercase tracking-wider">Choose Theme</h3>
+                        <div class="grid grid-cols-2 gap-3 sm:gap-4" id="template-list-container">
                             <!-- Injected via JS -->
                         </div>
                     </div>
@@ -343,68 +339,108 @@
                     <div id="tab-photos" class="tab-content">
                         <div class="space-y-4">
                             <div class="bg-blue-50 border border-blue-100 p-3 rounded-lg flex items-start gap-2 mb-4">
-                                <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
-                                <p class="text-xs text-blue-800">Images are auto-compressed to max 150KB and safely saved within your document limit.</p>
+                                <i class="fa-solid fa-bolt text-blue-500 mt-0.5"></i>
+                                <p class="text-xs text-blue-800">Images are auto-compressed (Max 150KB) and saved directly. No extra storage required!</p>
                             </div>
                             
                             <!-- Groom Photo -->
-                            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between hover:border-gray-300 transition">
+                            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between hover:border-brand-300 transition bg-white">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200 relative">
+                                    <div class="w-12 h-12 rounded-full bg-gray-50 overflow-hidden flex items-center justify-center border border-gray-200 relative shadow-sm">
                                         <img id="prev-groom-photo" src="" class="w-full h-full object-cover hidden">
-                                        <i class="fa-solid fa-user text-gray-400" id="icon-groom-photo"></i>
+                                        <i class="fa-solid fa-user text-gray-300" id="icon-groom-photo"></i>
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-gray-800">Groom Photo</p>
-                                        <p class="text-[10px] text-gray-400">Square 1:1 recommended</p>
+                                        <p class="text-[10px] text-gray-400">Square 1:1 format</p>
                                     </div>
                                 </div>
-                                <label class="cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-1.5 rounded border border-gray-200 text-xs font-medium transition">
+                                <label class="cursor-pointer bg-brand-50 hover:bg-brand-100 text-brand-700 px-4 py-2 rounded-lg border border-brand-200 text-xs font-semibold transition shadow-sm">
                                     Upload
                                     <input type="file" class="hidden" accept="image/jpeg, image/png, image/webp" onchange="handleImageUpload(this, 'groomPhoto')">
                                 </label>
                             </div>
 
                             <!-- Bride Photo -->
-                            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between hover:border-gray-300 transition">
+                            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between hover:border-brand-300 transition bg-white">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border border-gray-200 relative">
+                                    <div class="w-12 h-12 rounded-full bg-gray-50 overflow-hidden flex items-center justify-center border border-gray-200 relative shadow-sm">
                                         <img id="prev-bride-photo" src="" class="w-full h-full object-cover hidden">
-                                        <i class="fa-solid fa-user text-gray-400" id="icon-bride-photo"></i>
+                                        <i class="fa-solid fa-user text-gray-300" id="icon-bride-photo"></i>
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-gray-800">Bride Photo</p>
-                                        <p class="text-[10px] text-gray-400">Square 1:1 recommended</p>
+                                        <p class="text-[10px] text-gray-400">Square 1:1 format</p>
                                     </div>
                                 </div>
-                                <label class="cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-1.5 rounded border border-gray-200 text-xs font-medium transition">
+                                <label class="cursor-pointer bg-brand-50 hover:bg-brand-100 text-brand-700 px-4 py-2 rounded-lg border border-brand-200 text-xs font-semibold transition shadow-sm">
                                     Upload
                                     <input type="file" class="hidden" accept="image/jpeg, image/png, image/webp" onchange="handleImageUpload(this, 'bridePhoto')">
                                 </label>
                             </div>
 
                         </div>
-                        <div class="mt-8 pt-4 border-t border-gray-200 text-center">
-                            <button onclick="deleteInvitation()" class="text-red-500 hover:text-red-700 text-sm font-medium transition"><i class="fa-solid fa-trash mr-1"></i> Delete this Invitation</button>
+                        <div class="mt-10 pt-6 border-t border-gray-200 text-center">
+                            <button onclick="deleteInvitation()" class="text-red-500 hover:text-white hover:bg-red-500 border border-red-500 px-6 py-2 rounded-lg text-sm font-medium transition w-full sm:w-auto"><i class="fa-solid fa-trash mr-2"></i> Delete Invitation</button>
                         </div>
                     </div>
 
                 </div>
             </div>
 
+            <!-- Bottom Navigation for Mobile (Replaces Top Tabs) -->
+            <div class="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-between px-2 pb-safe shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-40">
+                <button class="tab-btn active" onclick="switchTab('tab-template')">
+                    <i class="fa-solid fa-layer-group"></i><span>Theme</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('tab-content')">
+                    <i class="fa-solid fa-pen-nib"></i><span>Details</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('tab-events')">
+                    <i class="fa-regular fa-calendar"></i><span>Events</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('tab-design')">
+                    <i class="fa-solid fa-palette"></i><span>Design</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('tab-photos')">
+                    <i class="fa-regular fa-image"></i><span>Photos</span>
+                </button>
+            </div>
+
+            <!-- Desktop Side Tabs (Hidden on Mobile) -->
+            <div class="hidden lg:flex w-20 bg-gray-900 flex-col items-center py-6 gap-6 z-20 shrink-0">
+                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1 transition" onclick="switchTab('tab-template')"><i class="fa-solid fa-layer-group text-xl"></i><span class="text-[10px]">Theme</span></button>
+                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1 transition" onclick="switchTab('tab-content')"><i class="fa-solid fa-pen-nib text-xl"></i><span class="text-[10px]">Details</span></button>
+                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1 transition" onclick="switchTab('tab-events')"><i class="fa-regular fa-calendar text-xl"></i><span class="text-[10px]">Events</span></button>
+                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1 transition" onclick="switchTab('tab-design')"><i class="fa-solid fa-palette text-xl"></i><span class="text-[10px]">Design</span></button>
+                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1 transition" onclick="switchTab('tab-photos')"><i class="fa-regular fa-image text-xl"></i><span class="text-[10px]">Photos</span></button>
+            </div>
+
             <!-- Live Preview Panel -->
-            <div class="flex-grow bg-gray-200/60 relative flex flex-col items-center justify-center h-[50vh] lg:h-full p-4 overflow-hidden">
-                <div class="absolute top-4 right-4 z-10 flex gap-2">
+            <!-- Mobile Preview Modal (Slide up) -->
+            <div id="mobile-preview-modal" class="fixed inset-0 bg-gray-900/95 z-50 transform translate-y-full lg:translate-y-0 lg:relative lg:flex-grow lg:bg-gray-200/60 flex flex-col items-center justify-center p-4 overflow-hidden">
+                
+                <!-- Close button for Mobile Modal -->
+                <button onclick="toggleMobilePreview()" class="lg:hidden absolute top-6 right-6 w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur rounded-full text-white flex items-center justify-center z-20 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+
+                <div class="hidden lg:flex absolute top-4 right-4 z-10 gap-2">
                     <button onclick="zoomPreview(0.1)" class="w-8 h-8 bg-white rounded shadow-sm text-gray-600 hover:text-brand-500"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
                     <button onclick="zoomPreview(-0.1)" class="w-8 h-8 bg-white rounded shadow-sm text-gray-600 hover:text-brand-500"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
                 </div>
                 
                 <!-- Phone Mockup Container -->
-                <div id="preview-container" class="w-[360px] h-[700px] max-h-full bg-white shadow-2xl rounded-3xl overflow-hidden border-[6px] border-gray-800 relative transition-transform duration-300 origin-top">
+                <div id="preview-container" class="w-full max-w-[360px] h-[90vh] lg:h-[700px] lg:max-h-full bg-white shadow-2xl rounded-[2rem] lg:rounded-3xl overflow-hidden border-[6px] border-gray-800 lg:border-gray-800 relative transition-transform duration-300 mx-auto">
                     <!-- RENDERER INJECTS HTML HERE -->
                     <div id="renderer-output-editor" class="w-full h-full relative"></div>
                 </div>
             </div>
+
+            <!-- Floating Action Button for Mobile Preview -->
+            <button onclick="toggleMobilePreview()" class="lg:hidden fixed bottom-20 right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 hover:bg-brand-600 transition hover:scale-105 active:scale-95">
+                <i class="fa-solid fa-eye"></i>
+            </button>
         </div>
     </div>
 
@@ -807,10 +843,29 @@
         }
 
         window.switchTab = function(tabId) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active');
+                // Remove desktop active styling if needed
+                if(b.parentElement.classList.contains('bg-gray-900')) {
+                    b.classList.remove('text-white');
+                    b.classList.add('text-gray-400');
+                }
+            });
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            
+            const currentBtn = event.currentTarget;
+            currentBtn.classList.add('active');
+            if(currentBtn.parentElement.classList.contains('bg-gray-900')) {
+                currentBtn.classList.remove('text-gray-400');
+                currentBtn.classList.add('text-white');
+            }
+
             document.getElementById(tabId).classList.add('active');
+        }
+
+        window.toggleMobilePreview = function() {
+            const modal = document.getElementById('mobile-preview-modal');
+            modal.classList.toggle('preview-open');
         }
 
         function populateTemplateList() {
