@@ -20,65 +20,55 @@
                         sans: ['Poppins', 'sans-serif'],
                         arabic: ['Amiri', 'serif'],
                     },
-                    colors: {
-                        brand: {
-                            50: '#fdf8f6',
-                            100: '#f2e8e5',
-                            500: '#B38A4A',
-                            900: '#4A3825',
-                        }
-                    }
+                    colors: { brand: { 50: '#fdf8f6', 100: '#f2e8e5', 500: '#B38A4A', 900: '#4A3825' } }
                 }
             }
         }
     </script>
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #F8F7F4; color: #1F2937; }
+        body { font-family: 'Poppins', sans-serif; background-color: #F8F7F4; color: #1F2937; -webkit-tap-highlight-color: transparent;}
         .font-serif { font-family: 'Playfair Display', serif; }
         .font-arabic { font-family: 'Amiri', serif; }
         
-        /* View Sections - Force Hidden by Default */
         .view-section { display: none; opacity: 0; transition: opacity 0.3s ease; }
         .view-section.active { opacity: 1; }
         
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Toast */
+        #toast-container { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-w: 400px; align-items: center; }
+        .toast { background: #1F2937; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: 500; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); animation: slideUp 0.3s ease forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         /* Loader */
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #B38A4A; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Toast */
-        #toast-container { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-w: 400px; align-items: center; }
-        .toast { background: #1F2937; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: 500; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); animation: slideUp 0.3s ease forwards; text-align: center; width: auto; }
-        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        /* Template Specific Base Styles */
-        .template-card { position: relative; width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; background-size: cover; background-position: center; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .tab-btn { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 0; color: #9ca3af; font-size: 11px; font-weight: 500; transition: all 0.2s; }
-        .tab-btn.active { color: #B38A4A; }
-        .tab-btn i { font-size: 20px; margin-bottom: 2px; }
+        /* Editor Overlay Styles */
+        .editable-block { position: relative; cursor: pointer; transition: all 0.2s; border-radius: 12px; }
+        .editable-block:hover { box-shadow: 0 0 0 2px #3B82F6; background-color: rgba(59, 130, 246, 0.05); }
+        .editable-block .edit-badge { position: absolute; top: -10px; right: -10px; background: #3B82F6; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; opacity: 0; transform: scale(0.8); transition: all 0.2s; z-index: 50; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+        .editable-block:hover .edit-badge { opacity: 1; transform: scale(1); }
+        .hidden-block { opacity: 0.3 !important; filter: grayscale(100%); }
+        .hidden-block:hover { opacity: 0.6 !important; }
+        .hidden-block .edit-badge { background: #EF4444; }
+        
+        .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
     </style>
 </head>
 <body class="antialiased h-[100dvh] w-screen overflow-hidden flex flex-col bg-gray-50">
 
-    <!-- Global Loader Overlay -->
+    <!-- Global Loader -->
     <div id="global-loader" class="fixed inset-0 bg-white/95 z-[9999] flex flex-col items-center justify-center hidden backdrop-blur-md transition-opacity">
         <div class="loader w-14 h-14 border-4 mb-4"></div>
         <p class="text-gray-800 font-medium tracking-wide text-lg" id="loader-text">Loading...</p>
     </div>
-
-    <!-- Toast Container -->
     <div id="toast-container"></div>
 
-    <!-- 1. LOGIN VIEW -->
-    <!-- Fixed: Made absolute inset-0 and flex for perfect centering -->
-    <div id="view-login" class="view-section absolute inset-0 z-50 bg-[url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center flex-col items-center justify-center">
+    <div id="view-login" class="view-section absolute inset-0 z-50 bg-[url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center flex flex-col items-center justify-center">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
         <div class="relative z-10 max-w-md w-full px-6">
             <div class="bg-white/95 backdrop-blur-md p-8 sm:p-10 rounded-3xl shadow-2xl text-center border border-white/20">
@@ -87,392 +77,220 @@
                 </div>
                 <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-2">Wedding Studio</h1>
                 <p class="text-gray-500 mb-10 text-sm">Create your perfect digital invitation</p>
-                
                 <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-800 py-4 px-4 rounded-xl hover:bg-gray-50 hover:shadow-md transition-all font-semibold active:scale-[0.98] text-base">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6" alt="Google">
-                    Continue with Google
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6" alt="Google"> Continue with Google
                 </button>
-                <p class="mt-6 text-xs text-gray-400">Your invitations, your private workspace.</p>
             </div>
         </div>
     </div>
 
-    <!-- 2. DASHBOARD VIEW -->
-    <div id="view-dashboard" class="view-section h-full w-full bg-[#F8F7F4] flex-col overflow-y-auto">
-        <nav class="bg-white sticky top-0 z-40 border-b border-gray-200 shadow-sm">
+    <div id="view-dashboard" class="view-section absolute inset-0 bg-[#F8F7F4] flex flex-col overflow-y-auto">
+        <nav class="bg-white sticky top-0 z-40 border-b border-gray-200 shadow-sm shrink-0">
             <div class="max-w-6xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
-                <div class="font-serif font-bold text-xl text-brand-900 flex items-center gap-2">
-                    <i class="fa-solid fa-rings-wedding text-brand-500"></i> Studio
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <img id="user-avatar" src="" class="w-8 h-8 rounded-full bg-gray-200 hidden" alt="Avatar">
-                        <span id="user-name" class="font-medium text-sm hidden sm:block text-gray-700"></span>
-                    </div>
-                    <button id="btn-logout" class="text-gray-400 hover:text-red-500 transition p-2 bg-gray-50 rounded-full w-10 h-10 flex items-center justify-center" title="Logout">
-                        <i class="fa-solid fa-power-off"></i>
-                    </button>
+                <div class="font-serif font-bold text-xl text-brand-900 flex items-center gap-2"><i class="fa-solid fa-rings-wedding text-brand-500"></i> Studio</div>
+                <div class="flex items-center gap-3">
+                    <img id="user-avatar" src="" class="w-8 h-8 rounded-full bg-gray-200 hidden" alt="Avatar">
+                    <button id="btn-logout" class="text-gray-400 hover:text-red-500 transition w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center"><i class="fa-solid fa-power-off"></i></button>
                 </div>
             </div>
         </nav>
-
         <main class="max-w-6xl mx-auto px-4 md:px-8 py-8 w-full flex-grow pb-24">
-            <!-- Stats Bar -->
             <div class="bg-gradient-to-r from-brand-900 to-brand-500 rounded-3xl shadow-lg p-8 mb-10 flex flex-col md:flex-row justify-between items-center gap-6 text-white relative overflow-hidden">
-                <div class="absolute -right-10 -top-10 opacity-10">
-                    <i class="fa-solid fa-fan text-9xl"></i>
-                </div>
-                <div class="relative z-10 w-full md:w-auto text-center md:text-left">
+                <div class="relative z-10 text-center md:text-left">
                     <h2 class="text-3xl font-serif font-bold" id="dash-greeting">Good evening!</h2>
-                    <p class="text-brand-50 text-sm mt-2 opacity-90">Manage your elegant wedding invitations.</p>
+                    <p class="text-brand-50 mt-2 opacity-90">Manage your elegant wedding invitations.</p>
                 </div>
-                <button onclick="createNewInvitation()" class="relative z-10 w-full md:w-auto bg-white text-brand-900 px-8 py-4 rounded-xl shadow-md font-bold transition hover:bg-gray-50 hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-plus text-brand-500"></i> Create Invitation
-                </button>
+                <button onclick="createNewInvitation()" class="relative z-10 w-full md:w-auto bg-white text-brand-900 px-8 py-4 rounded-xl shadow-md font-bold transition hover:scale-105 active:scale-95"><i class="fa-solid fa-plus mr-2 text-brand-500"></i> Create Invitation</button>
             </div>
-
-            <div class="flex justify-between items-end mb-6 px-1">
-                <h3 class="text-xl font-bold text-gray-800">My Invitations</h3>
-            </div>
-
-            <div id="invitations-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Cards injected here -->
-            </div>
-            
-            <div id="empty-state" class="hidden text-center py-24 bg-white rounded-3xl shadow-sm border border-gray-100 border-dashed mx-2">
-                <div class="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-6 text-brand-500 text-3xl">
-                    <i class="fa-regular fa-envelope-open"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">No invitations yet</h3>
-                <p class="text-gray-500 mb-8 text-sm max-w-xs mx-auto">Start designing your first beautiful wedding invitation today.</p>
-                <button onclick="createNewInvitation()" class="text-brand-600 bg-brand-50 px-6 py-3 rounded-full font-semibold hover:bg-brand-100 transition active:scale-95">Start Creating</button>
-            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-6">My Invitations</h3>
+            <div id="invitations-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </main>
     </div>
 
-    <!-- 3. EDITOR VIEW -->
-    <div id="view-editor" class="view-section h-full w-full bg-gray-50 flex-col relative">
-        <!-- Editor Nav (Top) -->
-        <nav class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 shrink-0 shadow-sm z-20">
-            <div class="flex items-center gap-4">
-                <button onclick="window.location.hash='#dashboard'" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition active:scale-95"><i class="fa-solid fa-arrow-left"></i></button>
-                <div class="hidden sm:block">
-                    <h2 class="font-bold text-gray-800 text-sm">Editor</h2>
-                    <div class="text-[10px] text-gray-400 font-mono" id="editor-code-badge"></div>
+    <div id="view-editor" class="view-section absolute inset-0 bg-gray-200 flex flex-col">
+        <!-- Editor Top Navbar -->
+        <nav class="bg-white border-b border-gray-200 h-14 md:h-16 flex items-center justify-between px-3 md:px-6 shrink-0 shadow-sm z-40">
+            <div class="flex items-center gap-2 md:gap-4">
+                <button onclick="window.location.hash='#dashboard'" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition active:scale-95"><i class="fa-solid fa-arrow-left"></i></button>
+                <div class="flex flex-col">
+                    <span class="font-bold text-gray-800 text-sm leading-none">Visual Editor</span>
+                    <span id="save-status" class="text-[10px] text-gray-500 mt-1"><i class="fa-solid fa-cloud-arrow-up mr-1"></i>Saved</span>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
-                <span id="save-status" class="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full transition-opacity opacity-0"><i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>Saved</span>
-                
-                <!-- Status Toggle -->
-                <div class="flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1.5 border border-gray-200 shadow-inner">
-                    <span id="publish-status-text" class="text-xs font-bold text-gray-600 w-16 text-center">Draft</span>
+            <div class="flex items-center gap-2">
+                <button onclick="openModal('modal-themes')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition active:scale-95">
+                    <i class="fa-solid fa-palette text-brand-500"></i> <span class="hidden md:inline">Theme</span>
+                </button>
+                <div class="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1.5 md:py-2 border border-gray-200 shadow-inner">
+                    <span id="publish-status-text" class="text-[10px] md:text-xs font-bold text-gray-600 w-12 md:w-16 text-center">Draft</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggle-publish" class="sr-only peer" onchange="togglePublishStatus(this)">
-                        <div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+                        <div class="w-8 h-4 md:w-9 md:h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 md:after:h-4 md:after:w-4 after:transition-all peer-checked:bg-green-500"></div>
                     </label>
                 </div>
             </div>
         </nav>
 
-        <!-- Editor Workspace -->
-        <div class="flex-grow flex flex-col lg:flex-row overflow-hidden relative">
-            
-            <!-- Controls Panel (Scrollable Main Area) -->
-            <div class="w-full lg:w-[450px] bg-white flex flex-col h-full shrink-0 z-10 pb-[80px] lg:pb-0 overflow-y-auto">
-                <div class="flex-grow p-5 sm:p-6 space-y-6">
-                    
-                    <!-- TEMPLATE TAB -->
-                    <div id="tab-template" class="tab-content active">
-                        <h3 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest">Select Theme</h3>
-                        <div class="grid grid-cols-2 gap-4" id="template-list-container">
-                            <!-- Injected via JS -->
-                        </div>
-                    </div>
-
-                    <!-- CONTENT TAB -->
-                    <div id="tab-content" class="tab-content">
-                        <div class="space-y-6">
-                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                <h3 class="text-xs font-bold text-brand-500 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-rings-wedding"></i> Couple Details</h3>
-                                <div class="space-y-4">
-                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Groom's Name</label>
-                                    <input type="text" id="ed-groom" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition" oninput="handleEditorInput()"></div>
-                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Bride's Name</label>
-                                    <input type="text" id="ed-bride" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition" oninput="handleEditorInput()"></div>
-                                </div>
-                            </div>
-                            
-                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                <h3 class="text-xs font-bold text-brand-500 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-envelope-open-text"></i> Message</h3>
-                                <div class="space-y-4">
-                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Top Heading</label>
-                                    <input type="text" id="ed-heading" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-500" oninput="handleEditorInput()"></div>
-                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Invitation Text</label>
-                                    <textarea id="ed-message" rows="4" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none resize-none focus:border-brand-500" oninput="handleEditorInput()"></textarea></div>
-                                </div>
-                            </div>
-
-                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                                <div class="flex items-center justify-between mb-4">
-                                    <h3 class="text-xs font-bold text-brand-500 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-book-quran"></i> Quranic Verse</h3>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" id="ed-show-quote" class="sr-only peer" onchange="handleEditorInput()">
-                                        <div class="w-8 h-4 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-500"></div>
-                                    </label>
-                                </div>
-                                <div class="space-y-4" id="quote-fields">
-                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Arabic Text</label>
-                                    <input type="text" id="ed-arabic" class="w-full font-arabic bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-lg text-right outline-none focus:border-brand-500" oninput="handleEditorInput()"></div>
-                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Translation</label>
-                                    <input type="text" id="ed-translation" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-brand-500" oninput="handleEditorInput()"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- EVENTS TAB -->
-                    <div id="tab-events" class="tab-content">
-                         <div class="space-y-6">
-                            <div class="bg-brand-50/50 p-5 rounded-2xl border border-brand-100 shadow-sm">
-                                <h3 class="text-xs font-bold text-brand-600 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-calendar-star"></i> Main Event</h3>
-                                <div class="space-y-4">
-                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Event Title</label>
-                                    <input type="text" id="ed-me-title" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-500" placeholder="e.g. Wedding Ceremony" oninput="handleEditorInput()"></div>
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Date</label>
-                                        <input type="text" id="ed-me-date" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-500" placeholder="20 Sept 2026" oninput="handleEditorInput()"></div>
-                                        <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Time</label>
-                                        <input type="text" id="ed-me-time" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-500" placeholder="11:00 AM" oninput="handleEditorInput()"></div>
-                                    </div>
-                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Venue Name</label>
-                                    <input type="text" id="ed-me-venue" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-500" oninput="handleEditorInput()"></div>
-                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Short Address</label>
-                                    <input type="text" id="ed-me-address" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-500" oninput="handleEditorInput()"></div>
-                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Google Maps URL</label>
-                                    <input type="url" id="ed-me-map" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-brand-500" placeholder="https://maps.google.com/..." oninput="handleEditorInput()"></div>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <div class="flex justify-between items-center mb-4 px-1">
-                                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-list-ul"></i> Extra Events</h3>
-                                    <span id="extra-events-counter" class="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full font-bold">0/5</span>
-                                </div>
-                                <div id="extra-events-container" class="space-y-4 mb-4">
-                                    <!-- Dynamic Extra Events -->
-                                </div>
-                                <button id="btn-add-event" onclick="addExtraEvent()" class="w-full border-2 border-dashed border-gray-300 text-gray-500 bg-gray-50 hover:bg-gray-100 hover:border-gray-400 hover:text-gray-700 rounded-2xl py-4 text-sm font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]">
-                                    <i class="fa-solid fa-plus"></i> Add Event
-                                </button>
-                                <p id="max-events-msg" class="text-xs text-center text-orange-500 mt-3 hidden font-medium bg-orange-50 py-2 rounded-lg">Maximum 5 extra events allowed.</p>
-                            </div>
-                         </div>
-                    </div>
-
-                    <!-- DESIGN TAB -->
-                    <div id="tab-design" class="tab-content">
-                        <div class="space-y-6">
-                            <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
-                                <h3 class="text-xs font-bold text-brand-500 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-palette"></i> Colors</h3>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="bg-white p-3 rounded-xl border border-gray-200 flex flex-col items-center">
-                                        <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase">Primary</label>
-                                        <input type="color" id="ed-color-primary" class="w-12 h-12 rounded-lg cursor-pointer border-0 p-0" onchange="handleEditorInput()">
-                                    </div>
-                                    <div class="bg-white p-3 rounded-xl border border-gray-200 flex flex-col items-center">
-                                        <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase">Background</label>
-                                        <input type="color" id="ed-color-bg" class="w-12 h-12 rounded-lg cursor-pointer border-0 p-0" onchange="handleEditorInput()">
-                                    </div>
-                                    <div class="bg-white p-3 rounded-xl border border-gray-200 flex flex-col items-center col-span-2">
-                                        <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase">Text Color</label>
-                                        <input type="color" id="ed-color-text" class="w-12 h-12 rounded-lg cursor-pointer border-0 p-0" onchange="handleEditorInput()">
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
-                                <h3 class="text-xs font-bold text-brand-500 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-font"></i> Typography</h3>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Heading Font</label>
-                                    <select id="ed-font-heading" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-500" onchange="handleEditorInput()">
-                                        <option value="'Playfair Display', serif">Playfair Display (Elegant)</option>
-                                        <option value="'Cinzel', serif">Cinzel (Classic)</option>
-                                        <option value="'Great Vibes', cursive">Great Vibes (Script)</option>
-                                        <option value="'Montserrat', sans-serif">Montserrat (Modern)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
-                                <h3 class="text-xs font-bold text-brand-500 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-toggle-on"></i> Features</h3>
-                                <div class="space-y-4">
-                                    <label class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-brand-300 transition">
-                                        <span class="text-sm font-medium text-gray-700">Show Bismillah</span>
-                                        <input type="checkbox" id="ed-show-bismillah" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 accent-brand-500" onchange="handleEditorInput()">
-                                    </label>
-                                    <label class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-brand-300 transition">
-                                        <span class="text-sm font-medium text-gray-700">Show Map Button</span>
-                                        <input type="checkbox" id="ed-show-qr" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 accent-brand-500" onchange="handleEditorInput()">
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PHOTOS TAB -->
-                    <div id="tab-photos" class="tab-content">
-                        <div class="space-y-4">
-                            <div class="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-start gap-3 mb-6">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-bolt text-blue-500"></i>
-                                </div>
-                                <p class="text-xs text-blue-800 leading-relaxed mt-0.5"><span class="font-bold">Auto-Compression:</span> Images are automatically compressed to ~150KB to ensure fast loading times.</p>
-                            </div>
-                            
-                            <!-- Groom Photo -->
-                            <div class="border border-gray-200 rounded-2xl p-5 flex items-center justify-between hover:border-brand-300 transition bg-white shadow-sm">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-16 h-16 rounded-full bg-gray-50 overflow-hidden flex items-center justify-center border-2 border-gray-100 relative shadow-inner">
-                                        <img id="prev-groom-photo" src="" class="w-full h-full object-cover hidden">
-                                        <i class="fa-solid fa-user text-gray-300 text-2xl" id="icon-groom-photo"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-bold text-gray-800">Groom Photo</p>
-                                        <p class="text-[10px] text-gray-400 mt-0.5">Square 1:1 format</p>
-                                    </div>
-                                </div>
-                                <label class="cursor-pointer bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition active:scale-95 shadow-md">
-                                    Upload
-                                    <input type="file" class="hidden" accept="image/jpeg, image/png, image/webp" onchange="handleImageUpload(this, 'groomPhoto')">
-                                </label>
-                            </div>
-
-                            <!-- Bride Photo -->
-                            <div class="border border-gray-200 rounded-2xl p-5 flex items-center justify-between hover:border-brand-300 transition bg-white shadow-sm">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-16 h-16 rounded-full bg-gray-50 overflow-hidden flex items-center justify-center border-2 border-gray-100 relative shadow-inner">
-                                        <img id="prev-bride-photo" src="" class="w-full h-full object-cover hidden">
-                                        <i class="fa-solid fa-user text-gray-300 text-2xl" id="icon-bride-photo"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-bold text-gray-800">Bride Photo</p>
-                                        <p class="text-[10px] text-gray-400 mt-0.5">Square 1:1 format</p>
-                                    </div>
-                                </div>
-                                <label class="cursor-pointer bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition active:scale-95 shadow-md">
-                                    Upload
-                                    <input type="file" class="hidden" accept="image/jpeg, image/png, image/webp" onchange="handleImageUpload(this, 'bridePhoto')">
-                                </label>
-                            </div>
-
-                        </div>
-                        <div class="mt-12 pt-8 border-t border-gray-200 text-center">
-                            <button onclick="deleteInvitation()" class="text-red-500 hover:text-white hover:bg-red-500 border-2 border-red-100 hover:border-red-500 bg-red-50 px-8 py-3 rounded-xl text-sm font-bold transition w-full active:scale-95"><i class="fa-solid fa-trash mr-2"></i> Delete Invitation</button>
-                        </div>
-                    </div>
-
-                </div>
+        <!-- Live Editing Canvas -->
+        <div class="flex-grow overflow-auto relative flex justify-center pb-20 pt-4 md:pt-8" id="editor-workspace">
+            <!-- Instructions Overlay (Disappears after interaction) -->
+            <div id="editor-hint" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-6 py-3 rounded-full text-sm font-medium z-30 shadow-lg pointer-events-none transition-opacity duration-500 flex items-center gap-3">
+                <i class="fa-solid fa-hand-pointer animate-bounce"></i> Tap any section on the card to edit
             </div>
 
-            <!-- Bottom Navigation for Mobile (Replaces Top Tabs) -->
-            <div class="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-between px-1 pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.08)] z-40 h-[70px]">
-                <button class="tab-btn active" onclick="switchTab('tab-template')">
-                    <i class="fa-solid fa-layer-group"></i><span>Theme</span>
-                </button>
-                <button class="tab-btn" onclick="switchTab('tab-content')">
-                    <i class="fa-solid fa-pen-nib"></i><span>Details</span>
-                </button>
-                <button class="tab-btn" onclick="switchTab('tab-events')">
-                    <i class="fa-regular fa-calendar-star"></i><span>Events</span>
-                </button>
-                <button class="tab-btn" onclick="switchTab('tab-design')">
-                    <i class="fa-solid fa-palette"></i><span>Design</span>
-                </button>
-                <button class="tab-btn" onclick="switchTab('tab-photos')">
-                    <i class="fa-regular fa-image"></i><span>Photos</span>
-                </button>
+            <div class="w-full max-w-[420px] bg-white min-h-[800px] shadow-2xl relative transition-transform duration-300 mx-auto" id="visual-editor-canvas">
+                <!-- RENDERER INJECTS TEMPLATE HERE WITH EDIT BUTTONS -->
+                <div id="renderer-output-editor" class="w-full h-full relative"></div>
             </div>
-
-            <!-- Desktop Side Tabs (Hidden on Mobile) -->
-            <div class="hidden lg:flex w-24 bg-gray-900 flex-col items-center py-8 gap-6 z-20 shrink-0 shadow-2xl">
-                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1.5 transition" onclick="switchTab('tab-template')"><i class="fa-solid fa-layer-group text-2xl"></i><span class="text-[10px] font-bold uppercase tracking-wider">Theme</span></button>
-                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1.5 transition mt-4" onclick="switchTab('tab-content')"><i class="fa-solid fa-pen-nib text-2xl"></i><span class="text-[10px] font-bold uppercase tracking-wider">Details</span></button>
-                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1.5 transition mt-4" onclick="switchTab('tab-events')"><i class="fa-regular fa-calendar-star text-2xl"></i><span class="text-[10px] font-bold uppercase tracking-wider">Events</span></button>
-                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1.5 transition mt-4" onclick="switchTab('tab-design')"><i class="fa-solid fa-palette text-2xl"></i><span class="text-[10px] font-bold uppercase tracking-wider">Design</span></button>
-                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1.5 transition mt-4" onclick="switchTab('tab-photos')"><i class="fa-regular fa-image text-2xl"></i><span class="text-[10px] font-bold uppercase tracking-wider">Photos</span></button>
-            </div>
-
-            <!-- Live Preview Panel -->
-            <!-- Mobile Preview Modal (Slide up) -->
-            <div id="mobile-preview-modal" class="fixed inset-0 bg-gray-900/95 z-[60] transform translate-y-full opacity-0 pointer-events-none lg:translate-y-0 lg:opacity-100 lg:pointer-events-auto lg:relative lg:flex-grow lg:bg-gray-100 flex flex-col items-center justify-center p-4 overflow-hidden transition-all duration-300 ease-in-out">
-                
-                <!-- Close button for Mobile Modal -->
-                <button onclick="toggleMobilePreview()" class="lg:hidden absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md rounded-full text-white flex items-center justify-center z-20 transition active:scale-95 shadow-lg">
-                    <i class="fa-solid fa-chevron-down text-xl"></i>
-                </button>
-
-                <div class="hidden lg:flex absolute top-4 right-4 z-10 gap-2">
-                    <button onclick="zoomPreview(0.1)" class="w-10 h-10 bg-white rounded-lg shadow-sm text-gray-600 hover:text-brand-500 transition active:scale-95 border border-gray-200"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
-                    <button onclick="zoomPreview(-0.1)" class="w-10 h-10 bg-white rounded-lg shadow-sm text-gray-600 hover:text-brand-500 transition active:scale-95 border border-gray-200"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
-                </div>
-                
-                <!-- Phone Mockup Container -->
-                <div id="preview-container" class="w-full max-w-[380px] h-[85vh] lg:h-[750px] lg:max-h-full bg-white shadow-2xl rounded-[2.5rem] lg:rounded-[3rem] overflow-hidden border-[8px] border-gray-900 relative transition-transform duration-300 mx-auto mt-10 lg:mt-0">
-                    <!-- RENDERER INJECTS HTML HERE -->
-                    <div id="renderer-output-editor" class="w-full h-full relative"></div>
-                </div>
-            </div>
-
-            <!-- Floating Action Button for Mobile Preview -->
-            <button onclick="toggleMobilePreview()" class="lg:hidden fixed bottom-24 right-4 w-16 h-16 bg-gray-900 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30 hover:bg-black transition active:scale-90 border-4 border-white">
-                <i class="fa-solid fa-eye"></i>
-            </button>
         </div>
     </div>
 
-    <!-- 4. PUBLIC INVITATION VIEW -->
-    <!-- Fixed display to flex column -->
-    <div id="view-public" class="view-section h-full w-full bg-black flex-col items-center overflow-y-auto">
-        <div class="w-full max-w-[450px] min-h-screen bg-white relative flex flex-col shadow-2xl mx-auto">
+    <div id="view-public" class="view-section absolute inset-0 bg-black flex flex-col items-center overflow-y-auto">
+        <div class="w-full max-w-[450px] min-h-screen bg-white relative flex flex-col shadow-2xl mx-auto pb-24">
+            <div id="renderer-output-public" class="w-full h-full relative flex-grow"></div>
             
-            <div class="flex-grow relative">
-                <!-- RENDERER INJECTS PUBLIC HTML HERE -->
-                <div id="renderer-output-public" class="w-full h-full relative min-h-screen"></div>
-            </div>
-
-            <!-- Public Action Bar -->
-            <div id="public-action-bar" class="sticky bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 p-4 pb-6 flex gap-3 z-50 rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
-                <button onclick="publicShareWhatsApp()" class="flex-1 bg-[#25D366] text-white py-4 rounded-2xl font-bold shadow-md hover:bg-[#20bd5a] transition flex items-center justify-center gap-2 active:scale-95 text-base">
-                    <i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp
+            <div id="public-action-bar" class="fixed bottom-0 w-full max-w-[450px] bg-white/95 backdrop-blur-md border-t border-gray-200 p-4 pb-safe flex gap-3 z-50 rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+                <button onclick="publicShareWhatsApp()" class="flex-1 bg-[#25D366] text-white py-3.5 rounded-2xl font-bold shadow-md hover:bg-[#20bd5a] transition flex items-center justify-center gap-2 active:scale-95 text-sm">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp
                 </button>
-                <button onclick="publicCopyLink()" class="flex-1 bg-gray-100 text-gray-800 py-4 rounded-2xl font-bold shadow-sm hover:bg-gray-200 transition flex items-center justify-center gap-2 border border-gray-200 active:scale-95 text-base">
+                <button onclick="publicCopyLink()" class="flex-1 bg-gray-100 text-gray-800 py-3.5 rounded-2xl font-bold shadow-sm hover:bg-gray-200 transition flex items-center justify-center gap-2 border border-gray-200 active:scale-95 text-sm">
                     <i class="fa-regular fa-copy text-lg"></i> Copy Link
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- 5. ERROR VIEW -->
-    <div id="view-error" class="view-section h-full w-full flex-col items-center justify-center bg-gray-50">
-        <div class="text-center p-10 bg-white rounded-3xl shadow-xl border border-gray-100 max-w-md w-full mx-4">
-            <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="fa-solid fa-link-slash text-3xl text-red-400"></i>
+    <div id="modal-container" class="fixed inset-0 z-[100] modal-overlay hidden flex flex-col justify-end md:justify-center items-center p-0 md:p-4">
+        
+        <!-- Modal Wrapper -->
+        <div class="bg-white w-full md:max-w-md md:rounded-3xl rounded-t-3xl shadow-2xl transform transition-transform translate-y-full md:translate-y-0 duration-300 flex flex-col max-h-[85vh]" id="modal-content-wrapper">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
+                <h3 class="font-bold text-gray-800 text-lg" id="modal-title">Edit</h3>
+                <button onclick="closeModal()" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <h1 class="text-3xl font-serif font-bold text-gray-900 mb-3">Unavailable</h1>
-            <p class="text-gray-500 mb-8 text-sm">This invitation link is invalid or has been set to private by the creator.</p>
-            <button onclick="window.location.hash='#/'" class="bg-gray-900 text-white px-8 py-3.5 rounded-xl font-bold hover:bg-gray-800 transition active:scale-95 shadow-md">Go Home</button>
+            
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-6 overflow-y-auto space-y-5" id="modal-body">
+                
+                <!-- 1. Couple Modal -->
+                <div id="modal-couple" class="hidden edit-form space-y-4">
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Groom's Name</label>
+                    <input type="text" id="ed-groom" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Bride's Name</label>
+                    <input type="text" id="ed-bride" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div class="border border-gray-200 rounded-xl p-3 text-center bg-gray-50 relative overflow-hidden">
+                            <img id="prev-groom-photo" src="" class="w-16 h-16 mx-auto rounded-full object-cover hidden shadow-sm mb-2">
+                            <i class="fa-solid fa-user text-gray-300 text-3xl mb-2 block" id="icon-groom-photo"></i>
+                            <label class="cursor-pointer bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-sm inline-block w-full">Groom Photo
+                                <input type="file" class="hidden" accept="image/*" onchange="handleImageUpload(this, 'groomPhoto')">
+                            </label>
+                        </div>
+                        <div class="border border-gray-200 rounded-xl p-3 text-center bg-gray-50 relative overflow-hidden">
+                            <img id="prev-bride-photo" src="" class="w-16 h-16 mx-auto rounded-full object-cover hidden shadow-sm mb-2">
+                            <i class="fa-solid fa-user text-gray-300 text-3xl mb-2 block" id="icon-bride-photo"></i>
+                            <label class="cursor-pointer bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-sm inline-block w-full">Bride Photo
+                                <input type="file" class="hidden" accept="image/*" onchange="handleImageUpload(this, 'bridePhoto')">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Content/Message Modal -->
+                <div id="modal-content" class="hidden edit-form space-y-4">
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Top Heading</label>
+                    <input type="text" id="ed-heading" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Invitation Text</label>
+                    <textarea id="ed-message" rows="4" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none resize-none focus:border-brand-500" oninput="handleEditorInput()"></textarea></div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-xl mt-4">
+                        <span class="text-sm font-medium text-gray-700">Show Bismillah</span>
+                        <input type="checkbox" id="ed-show-bismillah" class="w-5 h-5 rounded text-brand-500" onchange="handleEditorInput()">
+                    </div>
+                </div>
+
+                <!-- 3. Quran/Verse Modal -->
+                <div id="modal-quran" class="hidden edit-form space-y-4">
+                    <div class="flex items-center justify-between p-3 bg-brand-50 border border-brand-100 rounded-xl mb-2">
+                        <span class="text-sm font-bold text-brand-700">Show Quranic Verse</span>
+                        <input type="checkbox" id="ed-show-quote" class="w-5 h-5 rounded text-brand-500" onchange="handleEditorInput()">
+                    </div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Arabic Text</label>
+                    <input type="text" id="ed-arabic" class="w-full font-arabic bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-lg text-right focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Translation</label>
+                    <input type="text" id="ed-translation" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                </div>
+
+                <!-- 4. Main Event Modal -->
+                <div id="modal-mainEvent" class="hidden edit-form space-y-4">
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Event Title</label>
+                    <input type="text" id="ed-me-title" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="block text-xs font-medium text-gray-500 mb-1">Date</label>
+                        <input type="text" id="ed-me-date" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                        <div><label class="block text-xs font-medium text-gray-500 mb-1">Time</label>
+                        <input type="text" id="ed-me-time" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    </div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Venue Name</label>
+                    <input type="text" id="ed-me-venue" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Short Address</label>
+                    <input type="text" id="ed-me-address" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div><label class="block text-xs font-medium text-gray-500 mb-1">Google Maps URL</label>
+                    <input type="url" id="ed-me-map" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-xl mt-2">
+                        <span class="text-sm font-medium text-gray-700">Show Map Button on Card</span>
+                        <input type="checkbox" id="ed-show-qr" class="w-5 h-5 rounded text-brand-500" onchange="handleEditorInput()">
+                    </div>
+                </div>
+
+                <!-- 5. Themes & Colors Modal (Global) -->
+                <div id="modal-themes" class="hidden edit-form space-y-6">
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Available Templates</h4>
+                        <div class="grid grid-cols-2 gap-3" id="template-list-container">
+                            <!-- Dynamic Templates Loaded Here -->
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-2 text-center" id="template-status-msg">Loading templates from repository...</p>
+                    </div>
+                    <hr class="border-gray-100">
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Customize Colors</h4>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="bg-gray-50 p-2 rounded-lg border border-gray-200 flex flex-col items-center">
+                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Primary</label>
+                                <input type="color" id="ed-color-primary" class="w-8 h-8 rounded cursor-pointer border-0 p-0" onchange="handleEditorInput()">
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded-lg border border-gray-200 flex flex-col items-center">
+                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Background</label>
+                                <input type="color" id="ed-color-bg" class="w-8 h-8 rounded cursor-pointer border-0 p-0" onchange="handleEditorInput()">
+                            </div>
+                            <div class="bg-gray-50 p-2 rounded-lg border border-gray-200 flex flex-col items-center">
+                                <label class="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Text</label>
+                                <input type="color" id="ed-color-text" class="w-8 h-8 rounded cursor-pointer border-0 p-0" onchange="handleEditorInput()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center pt-4">
+                        <button onclick="deleteInvitation()" class="text-xs text-red-500 font-bold py-2 px-4 bg-red-50 rounded-full hover:bg-red-100 transition"><i class="fa-solid fa-trash mr-1"></i> Delete Invitation</button>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-gray-100 bg-gray-50 rounded-b-3xl shrink-0">
+                <button onclick="closeModal()" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl hover:bg-black transition active:scale-95 shadow-md">Done</button>
+            </div>
         </div>
     </div>
 
     <script type="module">
-        // Import Firebase v10 Modular SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        // Switched back to signInWithPopup for reliability without page reload issues on mobile
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         
-        // Firebase Config
+        // --- YOUR FIREBASE CONFIGURATION ---
         const firebaseConfig = {
             apiKey: "AIzaSyCp-NKbL_kmB2nzlTv9fSisc2cVuE55p-Q",
             authDomain: "online-angadi-003.firebaseapp.com",
@@ -490,139 +308,125 @@
             editingId: null,
             data: null,
             saveTimeout: null,
-            previewZoom: 1
+            isEditMode: false,
+            templates: {} // Dynamically loaded
         };
 
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            // Storage removed as requested, images go to Firestore as Base64
         } catch (e) {
             console.error("Firebase init failed:", e);
             showToast("Firebase Config Error.", "error");
         }
 
         /* ==========================================
-           TEMPLATE ENGINE & RENDERER
+           DYNAMIC TEMPLATE ENGINE (Loads from Github/Server)
            ========================================== */
-        const TEMPLATES = {
-            'islamic-gold': {
-                id: 'islamic-gold',
-                name: 'Islamic Gold',
-                thumb: 'https://images.unsplash.com/photo-1576506295286-5cda18df43e0?q=80&w=300&auto=format&fit=crop',
-                defaults: { colors: { primary: '#B38A4A', bg: '#FFF9F0', text: '#1F2937' }, fonts: { heading: "'Playfair Display', serif" } }
-            },
-            'minimal-floral': {
-                id: 'minimal-floral',
-                name: 'Minimal Floral',
-                thumb: 'https://images.unsplash.com/photo-1523688881242-6e2a8656a894?q=80&w=300&auto=format&fit=crop',
-                defaults: { colors: { primary: '#6B8E23', bg: '#FFFFFF', text: '#2d3748' }, fonts: { heading: "'Montserrat', sans-serif" } }
-            },
-            'royal-blue': {
-                id: 'royal-blue',
-                name: 'Royal Elegance',
-                thumb: 'https://images.unsplash.com/photo-1549469502-c8de9359e192?q=80&w=300&auto=format&fit=crop',
-                defaults: { colors: { primary: '#1E3A8A', bg: '#F8FAFC', text: '#0F172A' }, fonts: { heading: "'Cinzel', serif" } }
+        window.registerTemplate = function(templateObj) {
+            state.templates[templateObj.id] = templateObj;
+            console.log(`Loaded template: ${templateObj.name}`);
+            if(document.getElementById('view-editor').classList.contains('active')) {
+                populateTemplateList();
+                updateEditorPreview();
             }
         };
 
-        function renderCardHTML(data) {
-            if(!data) return '';
-            const t = TEMPLATES[data.templateId] || TEMPLATES['islamic-gold'];
-            
-            const design = {
-                primary: data.design?.colors?.primary || t.defaults.colors.primary,
-                bg: data.design?.colors?.bg || t.defaults.colors.bg,
-                text: data.design?.colors?.text || t.defaults.colors.text,
-                fontHeading: data.design?.fonts?.heading || t.defaults.fonts.heading
-            };
-            
-            const settings = data.settings || {};
-            const couple = data.couple || {};
-            const c = data.content || {};
-            const me = data.mainEvent || {};
-            const ex = data.extraEvents || [];
+        // Fallback minimalist template in case repo has no files yet
+        window.registerTemplate({
+            id: 'default-minimal',
+            name: 'Classic Minimal',
+            thumb: 'https://images.unsplash.com/photo-1523688881242-6e2a8656a894?q=80&w=300&auto=format&fit=crop',
+            defaults: { colors: { primary: '#B38A4A', bg: '#FFF9F0', text: '#1F2937' }, fonts: { heading: "'Playfair Display', serif" } },
+            render: function(d, isEditMode) {
+                const colors = d.design?.colors || this.defaults.colors;
+                const fonts = d.design?.fonts || this.defaults.fonts;
+                const set = d.settings || {};
+                
+                // Helper to generate editable blocks
+                const wrap = (key, content, hideKey) => {
+                    if(!isEditMode) {
+                        return (hideKey && !set[hideKey]) ? '' : content;
+                    }
+                    const isHidden = (hideKey && !set[hideKey]);
+                    return `<div class="editable-block ${isHidden ? 'hidden-block' : ''}" data-edit="${key}">
+                                <div class="edit-badge"><i class="fa-solid fa-pen"></i></div>
+                                ${content}
+                            </div>`;
+                };
 
-            const customStyles = `
-                --primary: ${design.primary};
-                --bg: ${design.bg};
-                --text: ${design.text};
-                font-family: 'Poppins', sans-serif;
-                background-color: var(--bg);
-                color: var(--text);
-            `;
-
-            let html = `<div class="template-card relative p-8 flex flex-col items-center text-center transition-all duration-500" style="${customStyles}">`;
-            html += `<div class="absolute inset-4 border-2 rounded-2xl pointer-events-none z-0 opacity-40" style="border-color: var(--primary);"></div>`;
-            html += `<div class="relative z-10 w-full flex flex-col items-center min-h-[90%] my-auto py-8">`;
-
-            if(settings.showBismillah) {
-                html += `<div class="font-arabic text-3xl mb-8" style="color: var(--primary)">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>`;
-            }
-
-            if(c.heading) {
-                html += `<div class="text-[10px] uppercase tracking-[0.3em] mb-8 font-semibold opacity-70">${c.heading}</div>`;
-            }
-
-            html += `
-                <h1 class="text-4xl font-bold mb-3" style="font-family: ${design.fontHeading}; color: var(--primary)">${couple.groom || 'Groom Name'}</h1>
-                <span class="text-xl italic font-serif opacity-60 my-2">&</span>
-                <h1 class="text-4xl font-bold mt-3 mb-10" style="font-family: ${design.fontHeading}; color: var(--primary)">${couple.bride || 'Bride Name'}</h1>
-            `;
-
-            if(c.message) {
-                html += `<p class="text-sm leading-relaxed mb-8 px-4 opacity-80 whitespace-pre-line">${c.message}</p>`;
-            }
-
-            if(settings.showQuote && c.arabicText) {
-                html += `
-                    <div class="my-8 py-6 border-y border-opacity-20 w-3/4 mx-auto" style="border-color: var(--primary)">
-                        <p class="font-arabic text-2xl mb-3" style="color: var(--primary)">${c.arabicText}</p>
-                        ${c.translation ? `<p class="text-[10px] uppercase tracking-wider opacity-60 mt-3">${c.translation}</p>` : ''}
+                let html = `<div class="w-full min-h-[800px] h-full relative p-8 flex flex-col items-center text-center font-sans" style="background-color: ${colors.bg}; color: ${colors.text};">`;
+                html += `<div class="absolute inset-4 border-2 rounded-2xl pointer-events-none opacity-40" style="border-color: ${colors.primary};"></div>`;
+                
+                html += `<div class="relative z-10 w-full flex flex-col items-center py-6 my-auto">`;
+                
+                html += wrap('content', `<div class="font-arabic text-3xl mb-8" style="color: ${colors.primary}">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>`, 'showBismillah');
+                html += wrap('content', `<div class="text-[10px] uppercase tracking-[0.3em] mb-6 font-semibold opacity-70">${d.content?.heading || 'We Invite You'}</div>`);
+                
+                html += wrap('couple', `
+                    <div class="w-full mb-8">
+                        ${d.couple?.groomPhoto || d.couple?.bridePhoto ? `
+                            <div class="flex justify-center gap-4 mb-6">
+                                ${d.couple.groomPhoto ? `<img src="${d.couple.groomPhoto}" class="w-20 h-20 rounded-full object-cover border-2" style="border-color:${colors.primary}">` : ''}
+                                ${d.couple.bridePhoto ? `<img src="${d.couple.bridePhoto}" class="w-20 h-20 rounded-full object-cover border-2" style="border-color:${colors.primary}">` : ''}
+                            </div>
+                        ` : ''}
+                        <h1 class="text-4xl font-bold mb-2" style="font-family: ${fonts.heading}; color: ${colors.primary}">${d.couple?.groom || 'Groom Name'}</h1>
+                        <span class="text-xl italic font-serif opacity-60 my-1 block">&</span>
+                        <h1 class="text-4xl font-bold mt-2" style="font-family: ${fonts.heading}; color: ${colors.primary}">${d.couple?.bride || 'Bride Name'}</h1>
                     </div>
-                `;
+                `);
+
+                html += wrap('content', `<p class="text-sm leading-relaxed mb-8 px-4 opacity-80 whitespace-pre-line">${d.content?.message || 'Join us to celebrate our wedding.'}</p>`);
+                
+                html += wrap('quran', `
+                    <div class="my-6 py-5 border-y border-opacity-20 w-3/4 mx-auto" style="border-color: ${colors.primary}">
+                        <p class="font-arabic text-2xl mb-2" style="color: ${colors.primary}">${d.content?.arabicText || 'وَخَلَقْنَاكُمْ أَزْوَاجًا'}</p>
+                        <p class="text-[10px] uppercase tracking-wider opacity-60 mt-2">${d.content?.translation || 'And We created you in pairs'}</p>
+                    </div>
+                `, 'showQuote');
+
+                html += wrap('mainEvent', `
+                    <div class="bg-white/60 backdrop-blur-md rounded-2xl p-6 w-full max-w-sm my-6 shadow-sm border border-black/5">
+                        <h3 class="text-xs font-bold uppercase tracking-widest mb-3" style="color: ${colors.primary}">${d.mainEvent?.title || 'Nikah Ceremony'}</h3>
+                        <div class="font-semibold text-lg mb-1">${d.mainEvent?.date || '20 Sept 2026'}</div>
+                        <div class="text-sm opacity-80 mb-4 font-medium">${d.mainEvent?.time || '11:00 AM'}</div>
+                        <div class="font-bold">${d.mainEvent?.venue || 'Venue Name'}</div>
+                        <div class="text-xs opacity-60 mt-1 mb-4">${d.mainEvent?.address || 'Address goes here'}</div>
+                        ${(set.showMap && d.mainEvent?.mapUrl && !isEditMode) ? `
+                            <a href="${d.mainEvent.mapUrl}" target="_blank" class="inline-block text-[10px] uppercase font-bold border-2 px-6 py-2.5 rounded-full" style="border-color: ${colors.primary}; color: ${colors.primary}">
+                                Get Directions
+                            </a>
+                        ` : ''}
+                        ${(set.showMap && isEditMode) ? `<div class="inline-block text-[10px] uppercase font-bold border-2 px-6 py-2.5 rounded-full" style="border-color: ${colors.primary}; color: ${colors.primary}">Get Directions Button</div>` : ''}
+                    </div>
+                `);
+
+                html += `</div></div>`;
+                return html;
             }
+        });
 
-            html += `
-                <div class="bg-white/60 backdrop-blur-md rounded-2xl p-6 w-full max-w-sm mb-8 shadow-sm border border-black/5 relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-1" style="background-color: var(--primary)"></div>
-                    <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color: var(--primary)">${me.title || 'Main Event'}</h3>
-                    <div class="font-semibold text-lg mb-1 text-gray-900">${me.date || 'Date'}</div>
-                    <div class="text-sm text-gray-600 mb-5 font-medium">${me.time || 'Time'}</div>
-                    <div class="font-bold text-gray-800">${me.venue || 'Venue'}</div>
-                    <div class="text-xs text-gray-500 mt-1 mb-5">${me.address || 'Address'}</div>
-                    ${(settings.showMap && me.mapUrl) ? `
-                        <a href="${me.mapUrl}" target="_blank" class="inline-block text-[10px] uppercase tracking-wider font-bold border-2 px-6 py-2.5 rounded-full hover:bg-black/5 transition shadow-sm" style="border-color: var(--primary); color: var(--primary)">
-                            <i class="fa-solid fa-location-dot mr-1.5"></i> Get Directions
-                        </a>
-                    ` : ''}
-                </div>
-            `;
-
-            if(ex.length > 0) {
-                html += `<div class="w-full max-w-sm space-y-4 mb-10">`;
-                ex.forEach(ev => {
-                    html += `
-                        <div class="bg-white/30 backdrop-blur-sm border-l-4 pl-4 text-left py-2 opacity-90 rounded-r-lg" style="border-color: var(--primary)">
-                            <h4 class="text-sm font-bold text-gray-800">${ev.name}</h4>
-                            <p class="text-[11px] mt-1 font-medium text-gray-600">${ev.date} | ${ev.time}</p>
-                            <p class="text-[11px] font-semibold text-gray-700 mt-0.5">${ev.venue}</p>
-                        </div>
-                    `;
-                });
-                html += `</div>`;
+        // Function to load external templates
+        async function loadExternalTemplates() {
+            try {
+                const res = await fetch('/templates/registry.json');
+                if(res.ok) {
+                    const files = await res.json();
+                    for(let file of files) {
+                        const script = document.createElement('script');
+                        script.src = `/templates/${file}`;
+                        document.head.appendChild(script);
+                    }
+                    document.getElementById('template-status-msg').innerText = `Loaded ${files.length} custom templates.`;
+                } else {
+                    document.getElementById('template-status-msg').innerText = "Using default built-in template.";
+                }
+            } catch(e) {
+                console.log("No external templates found. Using defaults.");
+                document.getElementById('template-status-msg').innerText = "Using default built-in template.";
             }
-
-            if(couple.groomPhoto || couple.bridePhoto) {
-                 html += `<div class="flex gap-6 mb-8 justify-center w-full">`;
-                 if(couple.groomPhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-[3px] bg-gray-100 shadow-lg flex items-center justify-center" style="border-color: var(--primary)"><img src="${couple.groomPhoto}" class="w-full h-full object-cover"></div>`;
-                 if(couple.bridePhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-[3px] bg-gray-100 shadow-lg flex items-center justify-center" style="border-color: var(--primary)"><img src="${couple.bridePhoto}" class="w-full h-full object-cover"></div>`;
-                 html += `</div>`;
-            }
-
-            html += `</div></div>`;
-            return html;
         }
 
         /* ==========================================
@@ -630,64 +434,50 @@
            ========================================== */
         function handleRoute() {
             const hash = window.location.hash || '#/';
-            
-            // STRICT HIDING: Force hide all views to prevent any overlaps
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.remove('active');
-                el.style.display = 'none'; 
+                setTimeout(() => el.style.display = 'none', 300); 
             });
 
+            const showView = (id) => {
+                const el = document.getElementById(id);
+                el.style.display = 'flex';
+                setTimeout(() => el.classList.add('active'), 10);
+            };
+
             if (hash === '#/') {
-                if (currentUser) {
-                    window.location.hash = '#dashboard';
-                } else {
-                    const view = document.getElementById('view-login');
-                    view.style.display = 'flex'; // Use flex for centering
-                    setTimeout(() => view.classList.add('active'), 10);
-                }
+                if (currentUser) window.location.hash = '#dashboard';
+                else showView('view-login');
             } 
             else if (hash === '#dashboard') {
                 if (!currentUser) window.location.hash = '#/';
-                else {
-                    const view = document.getElementById('view-dashboard');
-                    view.style.display = 'flex';
-                    setTimeout(() => view.classList.add('active'), 10);
-                    loadDashboard();
-                }
+                else { showView('view-dashboard'); loadDashboard(); state.isEditMode = false; }
             } 
             else if (hash.startsWith('#editor/')) {
                 if (!currentUser) window.location.hash = '#/';
-                else {
-                    state.editingId = hash.replace('#editor/', '');
-                    const view = document.getElementById('view-editor');
-                    view.style.display = 'flex';
-                    setTimeout(() => view.classList.add('active'), 10);
-                    loadEditor();
+                else { 
+                    state.editingId = hash.replace('#editor/', ''); 
+                    state.isEditMode = true;
+                    showView('view-editor'); 
+                    loadEditor(); 
                 }
             }
             else if (hash.startsWith('#/i/')) {
                 const code = hash.replace('#/i/', '');
-                const view = document.getElementById('view-public');
-                view.style.display = 'flex';
-                setTimeout(() => view.classList.add('active'), 10);
+                state.isEditMode = false;
+                showView('view-public');
                 loadPublicInvitation(code);
-            }
-            else {
-                const view = document.getElementById('view-error');
-                view.style.display = 'flex';
-                setTimeout(() => view.classList.add('active'), 10);
             }
         }
         window.addEventListener('hashchange', handleRoute);
 
         /* ==========================================
-           AUTH LOGIC (Fixed using Popup)
+           AUTH LOGIC
            ========================================== */
         if(auth) {
             onAuthStateChanged(auth, (user) => {
                 currentUser = user;
                 if (user) {
-                    document.getElementById('user-name').innerText = user.displayName.split(' ')[0];
                     document.getElementById('dash-greeting').innerText = `Good evening, ${user.displayName.split(' ')[0]}!`;
                     if(user.photoURL) {
                         const img = document.getElementById('user-avatar');
@@ -696,109 +486,88 @@
                     }
                 }
                 handleRoute();
+                loadExternalTemplates(); // Load templates after app starts
             });
         }
 
         document.getElementById('btn-google-login')?.addEventListener('click', async () => {
             showLoader("Signing in securely...");
-            const provider = new GoogleAuthProvider();
             try {
-                // Switched to popup for reliable flow without losing hash or causing white screens
-                await signInWithPopup(auth, provider);
+                await signInWithPopup(auth, new GoogleAuthProvider());
                 hideLoader();
-                showToast("Login successful!", "success");
             } catch (error) {
                 hideLoader();
-                console.error("Auth Error:", error);
-                showToast("Login error. Please try again.", "error");
+                showToast("Login failed. Try again.", "error");
             }
         });
 
-        document.getElementById('btn-logout')?.addEventListener('click', () => {
-            signOut(auth).then(() => window.location.hash = '#/');
-        });
+        document.getElementById('btn-logout')?.addEventListener('click', () => signOut(auth).then(() => window.location.hash = '#/'));
 
         /* ==========================================
-           DASHBOARD LOGIC
+           DASHBOARD & CREATION
            ========================================== */
         async function loadDashboard() {
             showLoader();
             try {
                 const q = query(collection(db, "invitations"), where("ownerUid", "==", currentUser.uid));
                 const snap = await getDocs(q);
-                
                 const list = document.getElementById('invitations-list');
-                const empty = document.getElementById('empty-state');
                 list.innerHTML = '';
 
                 if (snap.empty) {
-                    empty.classList.remove('hidden');
-                    list.classList.add('hidden');
+                    list.innerHTML = `<div class="col-span-full text-center py-20"><i class="fa-regular fa-envelope-open text-4xl text-gray-300 mb-4 block"></i><p class="text-gray-500">No invitations yet. Start creating!</p></div>`;
                 } else {
-                    empty.classList.add('hidden');
-                    list.classList.remove('hidden');
-                    
                     snap.forEach((docSnap) => {
                         const data = docSnap.data();
                         const id = docSnap.id;
-                        const t = TEMPLATES[data.templateId] || TEMPLATES['islamic-gold'];
+                        const t = state.templates[data.templateId] || state.templates['default-minimal'];
                         const isPub = data.status === 'published';
                         
-                        const card = document.createElement('div');
-                        card.className = "bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-lg transition-all duration-300 group transform hover:-translate-y-1";
-                        card.innerHTML = `
-                            <div class="h-40 bg-gray-100 relative overflow-hidden bg-cover bg-center border-b border-gray-50" style="background-image: url('${t.thumb}')">
-                                <div class="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition duration-300"></div>
-                                <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold uppercase shadow-sm tracking-wider ${isPub ? 'text-green-600' : 'text-gray-500'}">
-                                    ${isPub ? '● Live' : 'Draft'}
+                        list.innerHTML += `
+                            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-lg transition-all group">
+                                <div class="h-40 bg-gray-100 bg-cover bg-center border-b border-gray-50 relative" style="background-image: url('${t?.thumb}')">
+                                    <div class="absolute top-3 right-3 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase shadow-sm ${isPub ? 'text-green-600' : 'text-gray-500'}">${isPub ? '● Live' : 'Draft'}</div>
                                 </div>
-                            </div>
-                            <div class="p-5 flex-grow flex flex-col">
-                                <h3 class="font-serif font-bold text-xl text-gray-900 truncate">${data.couple?.groom || 'Groom'} & ${data.couple?.bride || 'Bride'}</h3>
-                                <p class="text-xs text-gray-400 mt-1.5 mb-5 flex items-center gap-1.5 font-medium"><i class="fa-solid fa-link text-[10px]"></i> yourdomain.com/i/${id}</p>
-                                
-                                <div class="mt-auto grid grid-cols-2 gap-3 pt-4 border-t border-gray-50">
-                                    <a href="#editor/${id}" class="text-center bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 py-2.5 rounded-xl text-xs font-bold transition active:scale-95">Edit Card</a>
-                                    ${isPub ? 
-                                    `<a href="#/i/${id}" target="_blank" class="text-center bg-brand-50 hover:bg-brand-100 border border-brand-200 text-brand-700 py-2.5 rounded-xl text-xs font-bold transition active:scale-95">View Live</a>` 
-                                    : `<button disabled class="text-center bg-gray-50 text-gray-400 py-2.5 rounded-xl text-xs font-bold opacity-50 cursor-not-allowed">View Live</button>`}
+                                <div class="p-5 flex flex-col flex-grow">
+                                    <h3 class="font-serif font-bold text-lg text-gray-900 truncate">${data.couple?.groom || 'Groom'} & ${data.couple?.bride || 'Bride'}</h3>
+                                    <p class="text-[10px] text-gray-400 mt-1 mb-4"><i class="fa-solid fa-link"></i> /i/${id}</p>
+                                    <div class="mt-auto grid grid-cols-2 gap-2">
+                                        <a href="#editor/${id}" class="text-center bg-gray-50 hover:bg-gray-100 text-gray-700 py-2.5 rounded-xl text-xs font-bold transition">Edit</a>
+                                        ${isPub ? `<a href="#/i/${id}" target="_blank" class="text-center bg-brand-50 hover:bg-brand-100 text-brand-700 py-2.5 rounded-xl text-xs font-bold transition">View</a>` : `<button disabled class="text-center bg-gray-50 text-gray-400 py-2.5 rounded-xl text-xs font-bold opacity-50">View</button>`}
+                                    </div>
                                 </div>
                             </div>
                         `;
-                        list.appendChild(card);
                     });
                 }
             } catch (e) {
-                console.error(e);
-                showToast("Error loading invitations", "error");
+                showToast("Error loading dashboard", "error");
             }
             hideLoader();
         }
 
-        // GENERATE UNIQUE 5 CHAR CODE
-        function generateSecureCode() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        function generateCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789'; // removed confusing chars
             const array = new Uint32Array(5);
             window.crypto.getRandomValues(array);
             let result = '';
-            for (let i = 0; i < 5; i++) {
-                result += chars[array[i] % chars.length];
-            }
+            for (let i = 0; i < 5; i++) result += chars[array[i] % chars.length];
             return result;
         }
 
         window.createNewInvitation = async function() {
-            showLoader("Preparing workspace...");
+            showLoader("Creating workspace...");
             try {
-                const code = generateSecureCode();
-
+                const code = generateCode();
+                // We don't use getDoc to check existence to avoid permission denied on client side.
+                // Collisions on 5-chars are rare, but in production a backend function is better.
                 const initData = {
-                    ownerUid: currentUser.uid, // MUST MATCH REQUEST.AUTH.UID
+                    ownerUid: currentUser.uid,
                     code: code,
                     status: 'draft',
-                    templateId: 'islamic-gold',
-                    couple: { groom: '', bride: '', groomPhoto: null, bridePhoto: null },
-                    mainEvent: { title: 'Nikah Ceremony', date: '', time: '', venue: '', address: '', mapUrl: '' },
+                    templateId: 'default-minimal',
+                    couple: { groom: 'Ajmal', bride: 'Ayisha', groomPhoto: null, bridePhoto: null },
+                    mainEvent: { title: 'Nikah Ceremony', date: '20 September 2026', time: '11:00 AM', venue: 'Grand Auditorium', address: 'Calicut', mapUrl: '' },
                     extraEvents: [],
                     content: { heading: 'We cordially invite you', message: 'to join us on our special day\nand bless our new beginning.', arabicText: 'وَخَلَقْنَاكُمْ أَزْوَاجًا', translation: '"And We created you in pairs."' },
                     design: { colors: {}, fonts: {} }, 
@@ -807,7 +576,6 @@
                     updatedAt: serverTimestamp()
                 };
 
-                // FIXED: Create doc directly instead of getting it first to avoid permission denied error
                 await setDoc(doc(db, "invitations", code), initData);
                 window.location.hash = `#editor/${code}`;
             } catch (error) {
@@ -819,79 +587,40 @@
         }
 
         /* ==========================================
-           EDITOR LOGIC
+           VISUAL EDITOR LOGIC (In-Place Edit)
            ========================================== */
         async function loadEditor() {
             showLoader();
             try {
-                const docRef = doc(db, "invitations", state.editingId);
-                const docSnap = await getDoc(docRef);
-                
+                const docSnap = await getDoc(doc(db, "invitations", state.editingId));
                 if (!docSnap.exists() || docSnap.data().ownerUid !== currentUser.uid) {
                     showToast("Access Denied", "error");
-                    window.location.hash = '#dashboard';
-                    return;
+                    window.location.hash = '#dashboard'; return;
                 }
-
                 state.data = docSnap.data();
-                document.getElementById('editor-code-badge').innerText = `ID: ${state.editingId}`;
                 
+                // Show hint briefly
+                const hint = document.getElementById('editor-hint');
+                hint.classList.remove('opacity-0');
+                setTimeout(() => hint.classList.add('opacity-0'), 4000);
+
                 populateTemplateList();
                 bindDataToForms();
-                renderExtraEventsForm();
                 updateEditorPreview();
 
-            } catch(e) { 
-                console.error(e); 
-                showToast("Error loading editor", "error");
-            }
+            } catch(e) { showToast("Error loading editor", "error"); }
             hideLoader();
-        }
-
-        window.switchTab = function(tabId) {
-            document.querySelectorAll('.tab-btn').forEach(b => {
-                b.classList.remove('active');
-                if(b.parentElement.classList.contains('bg-gray-900')) {
-                    b.classList.remove('text-white');
-                    b.classList.add('text-gray-400');
-                }
-            });
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            const currentBtn = event.currentTarget;
-            currentBtn.classList.add('active');
-            if(currentBtn.parentElement.classList.contains('bg-gray-900')) {
-                currentBtn.classList.remove('text-gray-400');
-                currentBtn.classList.add('text-white');
-            }
-
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        // Fixed Mobile Preview Toggle using Tailwind classes correctly
-        window.toggleMobilePreview = function() {
-            const modal = document.getElementById('mobile-preview-modal');
-            
-            if (modal.classList.contains('opacity-0')) {
-                // Open
-                modal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
-                modal.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
-            } else {
-                // Close
-                modal.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
-                modal.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
-            }
         }
 
         function populateTemplateList() {
             const container = document.getElementById('template-list-container');
             container.innerHTML = '';
-            Object.values(TEMPLATES).forEach(t => {
-                const isSelected = state.data.templateId === t.id;
+            Object.values(state.templates).forEach(t => {
+                const isSel = state.data.templateId === t.id;
                 container.innerHTML += `
-                    <div onclick="selectTemplate('${t.id}')" class="cursor-pointer border-2 rounded-2xl overflow-hidden transition ${isSelected ? 'border-brand-500 shadow-md ring-4 ring-brand-100 scale-[0.98]' : 'border-gray-100 hover:border-gray-300'}">
-                        <div class="h-36 bg-cover bg-center" style="background-image: url('${t.thumb}')"></div>
-                        <div class="p-3 text-center text-xs font-bold bg-white text-gray-800 tracking-wide">${t.name}</div>
+                    <div onclick="selectTemplate('${t.id}')" class="cursor-pointer border-2 rounded-xl overflow-hidden transition ${isSel ? 'border-brand-500 shadow-md ring-2 ring-brand-100 scale-95' : 'border-gray-200'}">
+                        <div class="h-24 bg-cover bg-center" style="background-image: url('${t.thumb}')"></div>
+                        <div class="p-2 text-center text-[10px] font-bold bg-gray-50 text-gray-800">${t.name}</div>
                     </div>
                 `;
             });
@@ -899,25 +628,78 @@
 
         window.selectTemplate = function(id) {
             state.data.templateId = id;
-            const t = TEMPLATES[id];
-            if(!state.data.design.colors.primary) document.getElementById('ed-color-primary').value = t.defaults.colors.primary;
-            if(!state.data.design.colors.bg) document.getElementById('ed-color-bg').value = t.defaults.colors.bg;
-            if(!state.data.design.colors.text) document.getElementById('ed-color-text').value = t.defaults.colors.text;
-            
+            const t = state.templates[id];
+            if(!state.data.design.colors.primary) document.getElementById('ed-color-primary').value = t.defaults?.colors?.primary || '#000';
             populateTemplateList();
             handleEditorInput(); 
         }
 
+        // Attach click listeners to injected editable blocks
+        function attachEditListeners() {
+            const blocks = document.querySelectorAll('.editable-block');
+            blocks.forEach(block => {
+                block.onclick = (e) => {
+                    e.stopPropagation(); // prevent triggering parent clicks
+                    const editKey = block.getAttribute('data-edit');
+                    if(editKey) openModal('modal-' + editKey);
+                };
+            });
+        }
+
+        function updateEditorPreview() {
+            const container = document.getElementById('renderer-output-editor');
+            const t = state.templates[state.data.templateId] || state.templates['default-minimal'];
+            container.innerHTML = t.render(state.data, true); // true = isEditMode
+            attachEditListeners();
+        }
+
+        // --- MODAL SYSTEM ---
+        window.openModal = function(contentId) {
+            document.getElementById('modal-container').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('modal-content-wrapper').classList.remove('translate-y-full');
+            }, 10);
+            
+            // Hide all forms, show selected
+            document.querySelectorAll('.edit-form').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(contentId);
+            if(target) target.classList.remove('hidden');
+            
+            // Set dynamic title
+            const titles = {
+                'modal-couple': 'Edit Couple Details',
+                'modal-content': 'Edit Messages',
+                'modal-quran': 'Edit Islamic Verse',
+                'modal-mainEvent': 'Edit Main Event',
+                'modal-themes': 'Design & Themes'
+            };
+            document.getElementById('modal-title').innerText = titles[contentId] || 'Edit';
+        }
+
+        window.closeModal = function() {
+            document.getElementById('modal-content-wrapper').classList.add('translate-y-full');
+            setTimeout(() => {
+                document.getElementById('modal-container').classList.add('hidden');
+            }, 300);
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('modal-container').addEventListener('click', (e) => {
+            if(e.target === document.getElementById('modal-container')) closeModal();
+        });
+
+
+        // --- DATA BINDING ---
         function bindDataToForms() {
             const d = state.data;
             document.getElementById('ed-groom').value = d.couple?.groom || '';
             document.getElementById('ed-bride').value = d.couple?.bride || '';
+            
             document.getElementById('ed-heading').value = d.content?.heading || '';
             document.getElementById('ed-message').value = d.content?.message || '';
+            document.getElementById('ed-show-bismillah').checked = d.settings?.showBismillah;
             
-            const sq = d.settings?.showQuote;
-            document.getElementById('ed-show-quote').checked = sq;
-            document.getElementById('quote-fields').style.display = sq ? 'block' : 'none';
+            document.getElementById('ed-show-quote').checked = d.settings?.showQuote;
             document.getElementById('ed-arabic').value = d.content?.arabicText || '';
             document.getElementById('ed-translation').value = d.content?.translation || '';
             
@@ -927,30 +709,24 @@
             document.getElementById('ed-me-venue').value = d.mainEvent?.venue || '';
             document.getElementById('ed-me-address').value = d.mainEvent?.address || '';
             document.getElementById('ed-me-map').value = d.mainEvent?.mapUrl || '';
-            
-            const t = TEMPLATES[d.templateId] || TEMPLATES['islamic-gold'];
-            document.getElementById('ed-color-primary').value = d.design?.colors?.primary || t.defaults.colors.primary;
-            document.getElementById('ed-color-bg').value = d.design?.colors?.bg || t.defaults.colors.bg;
-            document.getElementById('ed-color-text').value = d.design?.colors?.text || t.defaults.colors.text;
-            document.getElementById('ed-font-heading').value = d.design?.fonts?.heading || t.defaults.fonts.heading;
-            
-            document.getElementById('ed-show-bismillah').checked = d.settings?.showBismillah;
             document.getElementById('ed-show-qr').checked = d.settings?.showMap;
+            
+            const t = state.templates[d.templateId] || state.templates['default-minimal'];
+            document.getElementById('ed-color-primary').value = d.design?.colors?.primary || t.defaults?.colors?.primary || '#000';
+            document.getElementById('ed-color-bg').value = d.design?.colors?.bg || t.defaults?.colors?.bg || '#fff';
+            document.getElementById('ed-color-text').value = d.design?.colors?.text || t.defaults?.colors?.text || '#000';
             
             const isPub = d.status === 'published';
             document.getElementById('toggle-publish').checked = isPub;
             document.getElementById('publish-status-text').innerText = isPub ? 'Published' : 'Draft';
             
-            if(d.couple?.groomPhoto) {
-                document.getElementById('prev-groom-photo').src = d.couple.groomPhoto;
-                document.getElementById('prev-groom-photo').classList.remove('hidden');
-                document.getElementById('icon-groom-photo').classList.add('hidden');
-            }
-            if(d.couple?.bridePhoto) {
-                document.getElementById('prev-bride-photo').src = d.couple.bridePhoto;
-                document.getElementById('prev-bride-photo').classList.remove('hidden');
-                document.getElementById('icon-bride-photo').classList.add('hidden');
-            }
+            ['groomPhoto', 'bridePhoto'].forEach(key => {
+                if(d.couple?.[key]) {
+                    document.getElementById(`prev-${key.replace('Photo','')}-photo`).src = d.couple[key];
+                    document.getElementById(`prev-${key.replace('Photo','')}-photo`).classList.remove('hidden');
+                    document.getElementById(`icon-${key.replace('Photo','')}-photo`).classList.add('hidden');
+                }
+            });
         }
 
         window.handleEditorInput = function() {
@@ -960,7 +736,6 @@
             state.data.content.message = document.getElementById('ed-message').value;
             
             state.data.settings.showQuote = document.getElementById('ed-show-quote').checked;
-            document.getElementById('quote-fields').style.display = state.data.settings.showQuote ? 'block' : 'none';
             state.data.content.arabicText = document.getElementById('ed-arabic').value;
             state.data.content.translation = document.getElementById('ed-translation').value;
             
@@ -974,199 +749,86 @@
             state.data.design.colors.primary = document.getElementById('ed-color-primary').value;
             state.data.design.colors.bg = document.getElementById('ed-color-bg').value;
             state.data.design.colors.text = document.getElementById('ed-color-text').value;
-            state.data.design.fonts.heading = document.getElementById('ed-font-heading').value;
             
             state.data.settings.showBismillah = document.getElementById('ed-show-bismillah').checked;
             state.data.settings.showMap = document.getElementById('ed-show-qr').checked;
             
             updateEditorPreview();
             
+            // Auto Save Debounce
             clearTimeout(state.saveTimeout);
             document.getElementById('save-status').classList.remove('opacity-100');
             state.saveTimeout = setTimeout(saveToFirestore, 1000);
-        }
-
-        function updateEditorPreview() {
-            const container = document.getElementById('renderer-output-editor');
-            container.innerHTML = renderCardHTML(state.data);
         }
 
         async function saveToFirestore() {
             try {
                 state.data.updatedAt = serverTimestamp();
                 await updateDoc(doc(db, "invitations", state.editingId), state.data);
-                
                 const badge = document.getElementById('save-status');
                 badge.classList.add('opacity-100');
-                setTimeout(() => badge.classList.remove('opacity-100'), 2500);
-            } catch(e) {
-                console.error(e);
-                showToast("Failed to save changes", "error");
-            }
-        }
-
-        /* --- EXTRA EVENTS (MAX 5) --- */
-        window.renderExtraEventsForm = function() {
-            const ex = state.data.extraEvents || [];
-            const container = document.getElementById('extra-events-container');
-            const btn = document.getElementById('btn-add-event');
-            const msg = document.getElementById('max-events-msg');
-            const counter = document.getElementById('extra-events-counter');
-            
-            container.innerHTML = '';
-            counter.innerText = `${ex.length}/5`;
-
-            if(ex.length >= 5) {
-                btn.classList.add('hidden');
-                msg.classList.remove('hidden');
-            } else {
-                btn.classList.remove('hidden');
-                msg.classList.add('hidden');
-            }
-
-            ex.forEach((ev, i) => {
-                container.innerHTML += `
-                    <div class="bg-white border border-gray-200 p-4 rounded-2xl relative shadow-sm hover:border-brand-200 transition">
-                        <button onclick="removeExtraEvent(${i})" class="absolute top-3 right-3 w-8 h-8 bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
-                        <input type="text" value="${ev.name || ''}" placeholder="Event Name" class="text-sm font-bold w-3/4 outline-none border-b-2 border-transparent focus:border-brand-500 mb-3 bg-transparent" onchange="updateEx(${i}, 'name', this.value)">
-                        <div class="grid grid-cols-2 gap-3 mb-3">
-                            <input type="text" value="${ev.date || ''}" placeholder="Date" class="text-xs bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl focus:border-brand-500 outline-none" onchange="updateEx(${i}, 'date', this.value)">
-                            <input type="text" value="${ev.time || ''}" placeholder="Time" class="text-xs bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl focus:border-brand-500 outline-none" onchange="updateEx(${i}, 'time', this.value)">
-                        </div>
-                        <input type="text" value="${ev.venue || ''}" placeholder="Venue Name" class="w-full text-xs bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl focus:border-brand-500 outline-none" onchange="updateEx(${i}, 'venue', this.value)">
-                    </div>
-                `;
-            });
-        }
-
-        window.addExtraEvent = function() {
-            if(!state.data.extraEvents) state.data.extraEvents = [];
-            if(state.data.extraEvents.length >= 5) return;
-            state.data.extraEvents.push({ name: '', date: '', time: '', venue: '' });
-            renderExtraEventsForm();
-            handleEditorInput(); 
-        }
-        
-        window.removeExtraEvent = function(i) {
-            state.data.extraEvents.splice(i, 1);
-            renderExtraEventsForm();
-            handleEditorInput();
-        }
-
-        window.updateEx = function(index, field, val) {
-            state.data.extraEvents[index][field] = val;
-            handleEditorInput();
+                setTimeout(() => badge.classList.remove('opacity-100'), 2000);
+            } catch(e) { showToast("Failed to save", "error"); }
         }
 
         window.togglePublishStatus = async function(checkbox) {
             const newStatus = checkbox.checked ? 'published' : 'draft';
             document.getElementById('publish-status-text').innerText = checkbox.checked ? 'Published' : 'Draft';
             state.data.status = newStatus;
-            
             try {
                 await updateDoc(doc(db, "invitations", state.editingId), { status: newStatus });
-                showToast(checkbox.checked ? "Invitation is now LIVE!" : "Changed to Draft mode", "success");
+                showToast(checkbox.checked ? "Live!" : "Draft mode", "success");
             } catch(e) {
-                checkbox.checked = !checkbox.checked; 
-                showToast("Failed to update status", "error");
+                checkbox.checked = !checkbox.checked; showToast("Update failed", "error");
             }
         }
 
         window.deleteInvitation = async function() {
-            if(confirm("Are you sure you want to permanently delete this invitation?")) {
+            if(confirm("Permanently delete this invitation?")) {
                 try {
                     await deleteDoc(doc(db, "invitations", state.editingId));
-                    showToast("Invitation deleted", "success");
+                    closeModal();
                     window.location.hash = '#dashboard';
-                } catch(e) {
-                    showToast("Error deleting", "error");
-                }
+                } catch(e) { showToast("Error deleting", "error"); }
             }
         }
 
-        window.zoomPreview = function(delta) {
-            state.previewZoom += delta;
-            if(state.previewZoom < 0.5) state.previewZoom = 0.5;
-            if(state.previewZoom > 1.5) state.previewZoom = 1.5;
-            document.getElementById('preview-container').style.transform = `scale(${state.previewZoom})`;
-        }
-
-        /* ==========================================
-           IMAGE UPLOAD (COMPRESSION & Base64 to Firestore)
-           ========================================== */
-        function compressImageToBase64(file, maxSizeKB) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-
-                        const maxDim = 500;
-                        if (width > height && width > maxDim) {
-                            height = Math.round(height * (maxDim / width));
-                            width = maxDim;
-                        } else if (height > width && height > maxDim) {
-                            width = Math.round(width * (maxDim / height));
-                            height = maxDim;
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        let quality = 0.8;
-                        let base64String = canvas.toDataURL('image/jpeg', quality);
-                        let sizeKB = Math.round((base64String.length * 3) / 4 / 1024);
-
-                        while (sizeKB > maxSizeKB && quality > 0.1) {
-                            quality -= 0.1;
-                            base64String = canvas.toDataURL('image/jpeg', quality);
-                            sizeKB = Math.round((base64String.length * 3) / 4 / 1024);
-                        }
-                        
-                        resolve(base64String);
-                    };
-                    img.onerror = () => reject(new Error("Failed to load image"));
-                };
-                reader.onerror = () => reject(new Error("Failed to read file"));
-            });
-        }
-
+        /* --- IMAGE UPLOAD (Firestore Base64) --- */
         window.handleImageUpload = async function(input, targetField) {
             const file = input.files[0];
             if(!file) return;
-
             try {
-                showLoader("Compressing & Saving Image...");
+                showLoader("Compressing image...");
+                const base64Data = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.src = e.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width, height = img.height;
+                            const maxDim = 500;
+                            if (width > height && width > maxDim) { height = Math.round(height * (maxDim / width)); width = maxDim; } 
+                            else if (height > width && height > maxDim) { width = Math.round(width * (maxDim / height)); height = maxDim; }
+                            canvas.width = width; canvas.height = height;
+                            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                            let quality = 0.8;
+                            let b64 = canvas.toDataURL('image/jpeg', quality);
+                            while (Math.round((b64.length * 3) / 4 / 1024) > 150 && quality > 0.1) {
+                                quality -= 0.1; b64 = canvas.toDataURL('image/jpeg', quality);
+                            }
+                            resolve(b64);
+                        };
+                    };
+                });
                 
-                // Compress to max 150KB and get Base64
-                const base64Data = await compressImageToBase64(file, 150);
-                
-                // Save Base64 directly to Document (No Storage required)
                 state.data.couple[targetField] = base64Data;
-                
-                const imgEl = document.getElementById(`prev-${targetField.replace('Photo', '')}-photo`);
-                const iconEl = document.getElementById(`icon-${targetField.replace('Photo', '')}-photo`);
-                if(imgEl && iconEl) {
-                    imgEl.src = base64Data;
-                    imgEl.classList.remove('hidden');
-                    iconEl.classList.add('hidden');
-                }
-                
+                bindDataToForms();
                 handleEditorInput(); 
-                showToast("Image uploaded successfully!", "success");
-            } catch(e) {
-                console.error(e);
-                showToast("Image processing failed.", "error");
-            } finally {
-                hideLoader();
-            }
+                showToast("Photo updated!", "success");
+            } catch(e) { showToast("Photo processing failed", "error"); } 
+            finally { hideLoader(); }
         }
 
         /* ==========================================
@@ -1175,72 +837,33 @@
         async function loadPublicInvitation(code) {
             showLoader();
             try {
-                const docRef = doc(db, "invitations", code);
-                const docSnap = await getDoc(docRef);
-
-                if (!docSnap.exists()) {
-                    window.location.hash = '#error';
-                    return;
-                }
-
+                const docSnap = await getDoc(doc(db, "invitations", code));
+                if (!docSnap.exists()) { document.body.innerHTML = "<h1 class='text-center mt-20 text-xl font-bold'>Invitation Not Found</h1>"; return; }
                 const data = docSnap.data();
-
-                if (data.status !== 'published') {
-                    if (!currentUser || currentUser.uid !== data.ownerUid) {
-                         window.location.hash = '#error';
-                         return;
-                    } else {
-                        showToast("Viewing as Owner (Draft Mode)", "info");
-                    }
+                if (data.status !== 'published' && (!currentUser || currentUser.uid !== data.ownerUid)) {
+                     document.body.innerHTML = "<h1 class='text-center mt-20 text-xl font-bold text-gray-500'>Invitation is Private</h1>"; return;
                 }
-
-                const container = document.getElementById('renderer-output-public');
-                container.innerHTML = renderCardHTML(data);
-
-            } catch (e) {
-                console.error(e);
-                window.location.hash = '#error';
-            }
+                const t = state.templates[data.templateId] || state.templates['default-minimal'];
+                document.getElementById('renderer-output-public').innerHTML = t.render(data, false); // false = Not edit mode
+            } catch (e) { document.body.innerHTML = "Error loading."; }
             hideLoader();
         }
 
-        window.publicShareWhatsApp = function() {
-            const url = window.location.href;
-            const text = `You are cordially invited to our wedding ceremony. View our invitation here: ${url}`;
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-        }
+        window.publicShareWhatsApp = () => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`You are invited! View here: ${window.location.href}`)}`, '_blank');
+        window.publicCopyLink = () => navigator.clipboard.writeText(window.location.href).then(() => showToast("Link copied!", "success"));
 
-        window.publicCopyLink = function() {
-            const url = window.location.href;
-            navigator.clipboard.writeText(url).then(() => {
-                showToast("Link copied to clipboard!", "success");
-            });
-        }
-
-        /* ==========================================
-           UTILITIES
-           ========================================== */
-        function showLoader(msg = "Loading...") { 
-            document.getElementById('loader-text').innerText = msg;
-            document.getElementById('global-loader').classList.remove('hidden'); 
-        }
-        function hideLoader() { 
-            document.getElementById('global-loader').classList.add('hidden'); 
-        }
-        
-        function showToast(msg, type='info') {
-            const cont = document.getElementById('toast-container');
+        /* Utilities */
+        function showLoader(m="Loading...") { document.getElementById('loader-text').innerText = m; document.getElementById('global-loader').classList.remove('hidden'); }
+        function hideLoader() { document.getElementById('global-loader').classList.add('hidden'); }
+        function showToast(m, t='info') {
+            const c = document.getElementById('toast-container');
             const el = document.createElement('div');
-            el.className = `toast ${type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-600' : 'bg-gray-900'}`;
-            el.innerHTML = msg;
-            cont.appendChild(el);
+            el.className = `toast ${t === 'error' ? 'bg-red-500' : t === 'success' ? 'bg-green-600' : 'bg-gray-900'}`;
+            el.innerHTML = m; c.appendChild(el);
             setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(handleRoute, 100); 
-        });
-
+        window.addEventListener('DOMContentLoaded', () => setTimeout(handleRoute, 100)); 
     </script>
 </body>
 </html>
