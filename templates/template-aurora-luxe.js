@@ -43,6 +43,7 @@ window.registerTemplate({
         const text = safe(colors.text, '#F7F2EA');
         const groom = safe(couple.groom, 'Groom Name');
         const bride = safe(couple.bride, 'Bride Name');
+        const initials = `${groom.charAt(0)}${bride.charAt(0)}`.toUpperCase();
         const heading = safe(content.heading, 'Together with their families');
         const message = safe(content.message, 'Invite you to celebrate a beautiful beginning, a promise made for a lifetime.');
         const arabic = safe(content.arabicText, 'وَخَلَقْنَاكُمْ أَزْوَاجًا');
@@ -113,16 +114,15 @@ window.registerTemplate({
     <div class="al-noise"></div><div class="al-glow a"></div><div class="al-glow b"></div><div class="al-orb"></div>
     <div class="al-shell">
         <div class="al-top">
-            <div class="al-monogram">W</div>
-            <div class="al-label">A beginning, beautifully written</div>
+            <div class="al-monogram">${initials}</div>
         </div>
 
-        ${editWrap('content', `<div class="al-bismillah">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>`, 'showBismillah')}
+        ${editWrap('bismillah', `<div class="al-bismillah">${safe(content.bismillah, 'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ')}</div>`, 'showBismillah')}
 
         <div class="al-hero">
-            ${editWrap('content', `<div class="al-heading">${heading}</div>`, 'showHeading')}
+            ${editWrap('heading', `<div class="al-heading">${heading}</div>`, 'showHeading')}
             ${editWrap('couple', `<div class="al-names"><span class="al-name">${groom}</span><span class="al-amp">&amp;</span><span class="al-name">${bride}</span></div>`, 'showCouple')}
-            ${editWrap('content', `<div><div class="al-rule"></div><p class="al-message">${message.replace(/\n/g,'<br>')}</p></div>`, 'showMessage')}
+            ${editWrap('message', `<div><div class="al-rule"></div><p class="al-message">${message.replace(/\n/g,'<br>')}</p></div>`, 'showMessage')}
         </div>
 
         ${editWrap('couple', `<div class="al-portraits"><img class="al-photo" src="${groomPhoto}" alt="Groom"><div class="al-photo-mid">&amp;</div><img class="al-photo" src="${bridePhoto}" alt="Bride"></div>`, 'showCouple')}
@@ -131,7 +131,6 @@ window.registerTemplate({
 
         ${editWrap('mainEvent', `<div class="al-event"><div class="al-event-title">${eventTitle}</div><div class="al-date">${date}</div><div class="al-time">${time}</div><div class="al-venue">${venue}</div><div class="al-address">${address}</div>${set.showMap !== false ? (map && !isEditMode ? `<a class="al-map" href="${map}" target="_blank" rel="noopener"><i class="fa-solid fa-location-arrow"></i> Directions</a>` : `<span class="al-map"><i class="fa-solid fa-location-arrow"></i> Directions</span>`) : ''}</div>`, 'showEvent')}
 
-        <div class="al-footer">With love, with prayers, with family</div>
     </div>
 </div>`;
     }

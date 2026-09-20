@@ -55,6 +55,7 @@
         
         .edit-badge { position: absolute; top: -12px; right: -12px; background: #3B82F6; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0.9; z-index: 50; box-shadow: 0 4px 6px rgba(0,0,0,0.2);}
         .drag-handle { position: absolute; top: -12px; left: -12px; background: #10B981; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0.9; z-index: 51; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: move; touch-action: none;}
+        .resize-handle { position: absolute; right: -12px; bottom: -12px; background: #8B5CF6; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; opacity: 0.9; z-index: 51; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: nwse-resize; touch-action: none;}
         
         .editable-block:hover .edit-badge, .editable-block:hover .drag-handle { opacity: 1; transform: scale(1.05); }
         .hidden-block { opacity: 0.3 !important; filter: grayscale(100%); }
@@ -62,6 +63,9 @@
         .hidden-block .edit-badge { background: #EF4444; }
         
         .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+        #editor-workspace { -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+        #crop-canvas { touch-action: none; cursor: grab; max-width: 100%; background: #111; }
+        #crop-canvas:active { cursor: grabbing; }
     </style>
 </head>
 <body class="antialiased h-[100dvh] w-screen overflow-hidden flex flex-col bg-gray-50">
@@ -170,7 +174,7 @@
 
     <div id="view-public" class="view-section absolute inset-0 bg-black flex-col items-center overflow-y-auto">
         <div class="w-full max-w-[450px] min-h-[100dvh] bg-white relative flex flex-col shadow-2xl mx-auto">
-            <div id="renderer-output-public" class="w-full h-full relative flex-grow overflow-hidden"></div>
+            <div id="renderer-output-public" class="w-full h-full relative flex-grow"></div>
         </div>
     </div>
 
@@ -222,14 +226,14 @@
                         <div class="border border-gray-200 rounded-xl p-3 text-center bg-gray-50 relative overflow-hidden">
                             <img id="prev-groom-photo" src="" class="w-16 h-16 mx-auto rounded-full object-cover hidden shadow-sm mb-2">
                             <i class="fa-solid fa-user text-gray-300 text-3xl mb-2 block" id="icon-groom-photo"></i>
-                            <label class="cursor-pointer bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-sm inline-block w-full">Upload Groom Photo
+                            <p class="text-[9px] text-gray-400 mb-2">Crop ratio: 1:1 (square)</p><label class="cursor-pointer bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-sm inline-block w-full">Upload Groom Photo
                                 <input type="file" class="hidden" accept="image/*" onchange="handleImageUpload(this, 'groomPhoto')">
                             </label>
                         </div>
                         <div class="border border-gray-200 rounded-xl p-3 text-center bg-gray-50 relative overflow-hidden">
                             <img id="prev-bride-photo" src="" class="w-16 h-16 mx-auto rounded-full object-cover hidden shadow-sm mb-2">
                             <i class="fa-solid fa-user text-gray-300 text-3xl mb-2 block" id="icon-bride-photo"></i>
-                            <label class="cursor-pointer bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-sm inline-block w-full">Upload Bride Photo
+                            <p class="text-[9px] text-gray-400 mb-2">Crop ratio: 1:1 (square)</p><label class="cursor-pointer bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-[10px] font-bold shadow-sm inline-block w-full">Upload Bride Photo
                                 <input type="file" class="hidden" accept="image/*" onchange="handleImageUpload(this, 'bridePhoto')">
                             </label>
                         </div>
@@ -262,9 +266,9 @@
                     <input type="text" id="ed-me-title" placeholder="e.g. Nikah Ceremony" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
                     <div class="grid grid-cols-2 gap-3">
                         <div><label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Date</label>
-                        <input type="text" id="ed-me-date" placeholder="e.g. 20 Sept 2026" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                        <input type="date" id="ed-me-date" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" onchange="handleEditorInput()"></div>
                         <div><label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Time</label>
-                        <input type="text" id="ed-me-time" placeholder="e.g. 11:00 AM" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                        <input type="time" id="ed-me-time" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" onchange="handleEditorInput()"></div>
                     </div>
                     <div><label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Venue Name</label>
                     <input type="text" id="ed-me-venue" placeholder="Enter Venue Name" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
@@ -309,7 +313,7 @@
                                  <button id="btn-clear-bg" class="text-red-500 text-[10px] font-bold hidden bg-red-50 px-3 py-1 rounded-lg" onclick="clearBgImage()"><i class="fa-solid fa-trash mr-1"></i> Remove</button>
                              </div>
                         </div>
-                        <p class="text-[9px] text-gray-400 mt-2 text-center">Image will auto-compress to save data.</p>
+                        <p class="text-[9px] text-gray-400 mt-2 text-center">Crop ratio: 9:16 (portrait). Image will auto-compress to save data.</p>
                     </div>
 
                     <div class="text-center pt-6 border-t border-gray-100">
@@ -370,6 +374,17 @@
         </div>
     </div>
 
+    <div id="image-crop-modal" class="fixed inset-0 z-[200] bg-black/80 hidden items-center justify-center p-4">
+        <div class="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl">
+            <div class="flex items-center justify-between mb-3"><h3 class="font-bold text-gray-800">Crop Image</h3><button onclick="cancelImageCrop()" class="w-8 h-8 rounded-full bg-gray-100"><i class="fa-solid fa-xmark"></i></button></div>
+            <p id="crop-ratio-label" class="text-xs text-gray-500 mb-3"></p>
+            <canvas id="crop-canvas"></canvas>
+            <label class="block text-xs font-bold text-gray-600 mt-4 mb-1">Zoom</label><input id="crop-zoom" type="range" min="1" max="3" value="1" step="0.01" class="w-full" oninput="updateCropZoom(this.value)">
+            <p class="text-[10px] text-gray-400 mt-2">Drag the image to choose the visible area.</p>
+            <button onclick="applyImageCrop()" class="mt-4 w-full rounded-xl bg-brand-500 py-3 font-bold text-white">Use this crop</button>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -415,20 +430,26 @@
             if(document.getElementById('view-dashboard').classList.contains('active')) renderTemplatesRow();
         };
 
-        // Dynamic Template Loader (Loads templates from GitHub/Vercel)
+        // Dynamic Template Loader (works both at a domain root and a GitHub Pages subpath)
         async function loadExternalTemplates() {
             try {
                 // templates/registry.json എന്ന ഫയൽ വായന
-                const response = await fetch('/templates/registry.json');
+                const templatesUrl = new URL('templates/', window.location.href);
+                const response = await fetch(new URL('registry.json', templatesUrl));
                 if(!response.ok) return;
                 
                 const files = await response.json();
+                if (!Array.isArray(files)) throw new Error('Template registry must be an array');
                 
                 // ഓരോ ഫയലും ആപ്പിലേക്ക് ലോഡ് ചെയ്യുന്നു
                 for(const file of files) {
+                    if (typeof file !== 'string' || !/^[a-zA-Z0-9_-]+\.js$/.test(file)) {
+                        console.warn('Ignoring invalid template filename:', file);
+                        continue;
+                    }
                     await new Promise((resolve) => {
                         const script = document.createElement('script');
-                        script.src = `/templates/${file}`;
+                        script.src = new URL(file, templatesUrl).href;
                         script.onload = resolve;
                         script.onerror = resolve; // പിഴവ് വന്നാലും അടുത്തതിലേക്ക് പോകും
                         document.head.appendChild(script);
@@ -464,6 +485,8 @@
                     if(isHidden && !isEditMode) return '';
                     
                     let style = '';
+                    const width = d.design?.sizes?.[key]?.width;
+                    const scale = d.design?.sizes?.[key]?.scale || 1;
                     if(d.design?.positions?.[key]) {
                         const pos = d.design.positions[key];
                         style = `position:absolute; left:${pos.x}%; top:${pos.y}%;`;
@@ -473,12 +496,14 @@
                         style = `position:absolute; left:50%; top:${defaultPos[key] || 50}%;`;
                     }
                     
-                    if(!isEditMode) return `<div class="absolute-pos w-full text-center flex flex-col items-center justify-center" style="${style} transform:translate(-50%,-50%);">${content}</div>`;
+                    const sizeStyle = width ? `width:${width}%;` : 'width:80%;';
+                    if(!isEditMode) return `<div class="absolute-pos text-center flex flex-col items-center justify-center" style="${style} ${sizeStyle} transform:translate(-50%,-50%);"><div style="transform:scale(${scale}); transform-origin:center; width:100%;">${content}</div></div>`;
                     
-                    return `<div class="editable-block absolute-pos w-max min-w-[200px] text-center flex flex-col items-center justify-center ${isHidden ? 'hidden-block' : ''}" data-edit="${key}" style="${style}">
+                    return `<div class="editable-block absolute-pos min-w-[120px] text-center flex flex-col items-center justify-center ${isHidden ? 'hidden-block' : ''}" data-edit="${key}" style="${style} ${sizeStyle}">
                                 <div class="drag-handle"><i class="fa-solid fa-arrows-up-down-left-right"></i></div>
                                 <div class="edit-badge"><i class="fa-solid fa-pen"></i></div>
-                                ${content}
+                                <div class="resize-handle"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></div>
+                                <div style="transform:scale(${scale}); transform-origin:center; width:100%;">${content}</div>
                             </div>`;
                 };
 
@@ -732,16 +757,19 @@
         function updateEditorPreview() {
             const container = document.getElementById('renderer-output-editor');
             const t = state.templates[state.data.templateId] || state.templates['blank-canvas'];
+            const canvas = document.getElementById('visual-editor-canvas');
+            // A long template owns its layout height. Let the editor workspace scroll it on mobile.
+            canvas.style.overflow = t.scrollable ? 'visible' : 'hidden';
             container.innerHTML = t.render(state.data, true);
             attachEditListeners();
             if(t.freeform) initDragDrop();
         }
 
         function attachEditListeners() {
-            const blocks = document.querySelectorAll('.editable-block');
+            const blocks = document.querySelectorAll('[data-edit]');
             blocks.forEach(block => {
                 block.onclick = (e) => {
-                    if(e.target.closest('.drag-handle')) return; 
+                    if(e.target.closest('.drag-handle, .resize-handle')) return;
                     e.stopPropagation();
                     const editKey = block.getAttribute('data-edit');
                     
@@ -756,21 +784,29 @@
         }
 
         // --- Drag and Drop Logic ---
-        let isDragging = false, dragTarget = null, dragStartX, dragStartY, initialX, initialY;
+        let isDragging = false, isResizing = false, dragTarget = null, dragStartX, dragStartY, initialX, initialY, initialWidth;
 
         function initDragDrop() {
             const workspace = document.getElementById('visual-editor-canvas');
             workspace.removeEventListener('mousedown', startDrag);
             workspace.removeEventListener('touchstart', startDrag);
+            workspace.removeEventListener('mousedown', startResize);
+            workspace.removeEventListener('touchstart', startResize);
             document.removeEventListener('mousemove', drag);
             document.removeEventListener('touchmove', drag);
+            document.removeEventListener('mousemove', resize);
+            document.removeEventListener('touchmove', resize);
             document.removeEventListener('mouseup', endDrag);
             document.removeEventListener('touchend', endDrag);
 
             workspace.addEventListener('mousedown', startDrag, {passive: false});
             workspace.addEventListener('touchstart', startDrag, {passive: false});
+            workspace.addEventListener('mousedown', startResize, {passive: false});
+            workspace.addEventListener('touchstart', startResize, {passive: false});
             document.addEventListener('mousemove', drag, {passive: false});
             document.addEventListener('touchmove', drag, {passive: false});
+            document.addEventListener('mousemove', resize, {passive: false});
+            document.addEventListener('touchmove', resize, {passive: false});
             document.addEventListener('mouseup', endDrag);
             document.addEventListener('touchend', endDrag);
         }
@@ -806,18 +842,48 @@
             const parentRect = dragTarget.parentElement.getBoundingClientRect();
             const dxPercent = (dx / parentRect.width) * 100; const dyPercent = (dy / parentRect.height) * 100;
 
-            dragTarget.style.left = `${initialX + dxPercent}%`;
-            dragTarget.style.top = `${initialY + dyPercent}%`;
+            dragTarget.style.left = `${Math.max(0, Math.min(100, initialX + dxPercent))}%`;
+            dragTarget.style.top = `${Math.max(0, Math.min(100, initialY + dyPercent))}%`;
+        }
+
+        function startResize(e) {
+            if(!e.target.closest('.resize-handle')) return;
+            isResizing = true;
+            dragTarget = e.target.closest('.editable-block');
+            e.preventDefault();
+            const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const parentRect = dragTarget.parentElement.getBoundingClientRect();
+            initialWidth = (dragTarget.getBoundingClientRect().width / parentRect.width) * 100;
+            dragStartX = clientX;
+            dragTarget.style.zIndex = 100;
+            dragTarget.style.transition = 'none';
+        }
+
+        function resize(e) {
+            if(!isResizing || !dragTarget) return;
+            e.preventDefault();
+            const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const parentRect = dragTarget.parentElement.getBoundingClientRect();
+            const width = Math.max(20, Math.min(150, initialWidth + ((clientX - dragStartX) / parentRect.width) * 100));
+            dragTarget.style.width = `${width}%`;
         }
 
         function endDrag(e) {
-            if(!isDragging || !dragTarget) return;
+            if((!isDragging && !isResizing) || !dragTarget) return;
+            const wasResizing = isResizing;
             isDragging = false;
+            isResizing = false;
             dragTarget.style.zIndex = ''; dragTarget.style.transition = '';
 
             const key = dragTarget.getAttribute('data-edit');
             if(!state.data.design.positions) state.data.design.positions = {};
-            state.data.design.positions[key] = { x: parseFloat(dragTarget.style.left), y: parseFloat(dragTarget.style.top) };
+            if(wasResizing) {
+                if(!state.data.design.sizes) state.data.design.sizes = {};
+                const width = parseFloat(dragTarget.style.width);
+                state.data.design.sizes[key] = { width, scale: width / 80 };
+            } else {
+                state.data.design.positions[key] = { x: parseFloat(dragTarget.style.left), y: parseFloat(dragTarget.style.top) };
+            }
 
             dragTarget = null;
             clearTimeout(state.saveTimeout);
@@ -995,45 +1061,57 @@
             }
         }
 
-        // Image compression to 150KB Base64 directly to Firestore
-        window.handleImageUpload = async function(input, targetField) {
-            const file = input.files[0];
-            if(!file) return;
+        // Cropping runs in the browser before the JPEG is compressed and saved to Firestore.
+        let cropState = null;
+        const cropCanvas = document.getElementById('crop-canvas');
+        const cropContext = cropCanvas.getContext('2d');
+        function drawCropPreview() {
+            if(!cropState) return;
+            const { image, zoom, offsetX, offsetY } = cropState;
+            cropContext.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
+            const scale = Math.max(cropCanvas.width / image.width, cropCanvas.height / image.height) * zoom;
+            const width = image.width * scale, height = image.height * scale;
+            cropContext.drawImage(image, (cropCanvas.width - width) / 2 + offsetX, (cropCanvas.height - height) / 2 + offsetY, width, height);
+        }
+        window.updateCropZoom = function(value) { if(cropState) { cropState.zoom = Number(value); drawCropPreview(); } }
+        window.cancelImageCrop = function() { cropState = null; document.getElementById('image-crop-modal').classList.add('hidden'); document.getElementById('image-crop-modal').classList.remove('flex'); }
+        window.handleImageUpload = function(input, targetField) {
+            const file = input.files[0]; input.value = '';
+            if(!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const image = new Image();
+                image.onload = () => {
+                    const ratio = targetField === 'bgImage' ? 9 / 16 : 1;
+                    cropCanvas.width = 540; cropCanvas.height = Math.round(540 / ratio);
+                    cropCanvas.style.aspectRatio = `${cropCanvas.width} / ${cropCanvas.height}`;
+                    cropState = { image, targetField, zoom: 1, offsetX: 0, offsetY: 0, ratio };
+                    document.getElementById('crop-zoom').value = '1';
+                    document.getElementById('crop-ratio-label').innerText = `Crop ratio: ${targetField === 'bgImage' ? '9:16 portrait' : '1:1 square'}`;
+                    document.getElementById('image-crop-modal').classList.remove('hidden');
+                    document.getElementById('image-crop-modal').classList.add('flex'); drawCropPreview();
+                };
+                image.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        let cropPointer = null;
+        cropCanvas.addEventListener('pointerdown', (event) => { if(cropState) { cropPointer = { x: event.clientX, y: event.clientY }; cropCanvas.setPointerCapture(event.pointerId); } });
+        cropCanvas.addEventListener('pointermove', (event) => { if(cropPointer && cropState) { cropState.offsetX += (event.clientX - cropPointer.x) * (cropCanvas.width / cropCanvas.clientWidth); cropState.offsetY += (event.clientY - cropPointer.y) * (cropCanvas.height / cropCanvas.clientHeight); cropPointer = { x: event.clientX, y: event.clientY }; drawCropPreview(); } });
+        cropCanvas.addEventListener('pointerup', () => { cropPointer = null; });
+        window.applyImageCrop = async function() {
+            if(!cropState) return;
+            showLoader('Compressing...');
             try {
-                showLoader("Compressing...");
-                const base64Data = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.src = e.target.result;
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            let w = img.width, h = img.height;
-                            const maxDim = 800; // Allow decent quality for BG
-                            if (w > h && w > maxDim) { h = Math.round(h * (maxDim / w)); w = maxDim; } 
-                            else if (h > w && h > maxDim) { w = Math.round(w * (maxDim / h)); h = maxDim; }
-                            canvas.width = w; canvas.height = h;
-                            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                            
-                            let q = 0.8;
-                            let b64 = canvas.toDataURL('image/jpeg', q);
-                            while (Math.round((b64.length * 3)/4/1024) > 150 && q > 0.1) {
-                                q -= 0.1; b64 = canvas.toDataURL('image/jpeg', q);
-                            }
-                            resolve(b64);
-                        };
-                    };
-                });
-                
-                if(targetField === 'bgImage') state.data.design.bgImage = base64Data;
-                else state.data.couple[targetField] = base64Data;
-                
-                bindDataToForms();
-                handleEditorInput(); 
-                showToast("Image uploaded!", "success");
-            } catch(e) { showToast("Processing failed", "error"); } 
-            finally { hideLoader(); }
+                const output = document.createElement('canvas'), maxWidth = 800;
+                output.width = maxWidth; output.height = Math.round(maxWidth / cropState.ratio);
+                output.getContext('2d').drawImage(cropCanvas, 0, 0, output.width, output.height);
+                let quality = 0.85, base64 = output.toDataURL('image/jpeg', quality);
+                while(Math.round((base64.length * 3) / 4 / 1024) > 150 && quality > 0.1) { quality -= 0.1; base64 = output.toDataURL('image/jpeg', quality); }
+                if(cropState.targetField === 'bgImage') state.data.design.bgImage = base64;
+                else state.data.couple[cropState.targetField] = base64;
+                cancelImageCrop(); bindDataToForms(); handleEditorInput(); showToast('Image uploaded!', 'success');
+            } catch(e) { showToast('Processing failed', 'error'); } finally { hideLoader(); }
         }
 
         window.clearBgImage = function() {
@@ -1099,6 +1177,7 @@
                             <div class="flex gap-2">
                                 <a href="#editor/${id}" onclick="closeModal()" class="bg-white px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-700">Edit</a>
                                 ${isPub ? `<a href="#/i/${id}" target="_blank" class="bg-brand-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold">View</a>` : ''}
+                                <button onclick="deleteInvitationById('${id}')" class="bg-red-50 px-3 py-1.5 rounded-xl border border-red-100 text-xs font-bold text-red-600">Delete</button>
                             </div>
                         </div>`;
                 } else {
@@ -1109,6 +1188,17 @@
                         </div>`;
                 }
             });
+        }
+
+        window.deleteInvitationById = async function(id) {
+            if(!confirm('Permanently delete this invitation?')) return;
+            try {
+                await deleteDoc(doc(db, 'invitations', id));
+                allInvitationsCache = allInvitationsCache.filter(invitation => invitation.id !== id);
+                renderViewAllList(allInvitationsCache, 'invitations');
+                renderInvitationsRow(allInvitationsCache);
+                showToast('Invitation deleted', 'success');
+            } catch(e) { showToast('Error deleting invitation', 'error'); }
         }
 
         function showLoader(m="Loading...") { document.getElementById('loader-text').innerText = m; document.getElementById('global-loader').classList.remove('hidden'); }
