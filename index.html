@@ -24,7 +24,7 @@
                         brand: {
                             50: '#fdf8f6',
                             100: '#f2e8e5',
-                            500: '#B38A4A', // Default Gold
+                            500: '#B38A4A',
                             900: '#4A3825',
                         }
                     }
@@ -344,7 +344,7 @@
                         <div class="space-y-4">
                             <div class="bg-blue-50 border border-blue-100 p-3 rounded-lg flex items-start gap-2 mb-4">
                                 <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
-                                <p class="text-xs text-blue-800">Images are auto-compressed to max 150KB and uploaded safely to save your storage space.</p>
+                                <p class="text-xs text-blue-800">Images are auto-compressed to max 150KB and safely saved within your document limit.</p>
                             </div>
                             
                             <!-- Groom Photo -->
@@ -442,15 +442,12 @@
     </div>
 
     <script type="module">
-        // Import Firebase v10 Modular SDKs
+        // Import Firebase v10 Modular SDKs (Only Auth & Firestore needed now)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         
-        // Changed uploadBytes to uploadString for Base64 Upload
-        import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
-
-        // Your Exact Firebase Configuration
+        // Firebase Config (User Provided)
         const firebaseConfig = {
             apiKey: "AIzaSyCp-NKbL_kmB2nzlTv9fSisc2cVuE55p-Q",
             authDomain: "online-angadi-003.firebaseapp.com",
@@ -461,7 +458,7 @@
             measurementId: "G-GH1DZXR5ZP"
         };
 
-        let app, auth, db, storage;
+        let app, auth, db;
         let currentUser = null;
         
         const state = {
@@ -475,14 +472,14 @@
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            storage = getStorage(app);
+            // Removed Firebase Storage initialization entirely
         } catch (e) {
             console.error("Firebase init failed:", e);
             showToast("Firebase Config Error.", "error");
         }
 
         /* ==========================================
-           TEMPLATE ENGINE
+           TEMPLATE ENGINE & RENDERER
            ========================================== */
         const TEMPLATES = {
             'islamic-gold': {
@@ -593,8 +590,8 @@
 
             if(couple.groomPhoto || couple.bridePhoto) {
                  html += `<div class="flex gap-4 mb-8 justify-center w-full">`;
-                 if(couple.groomPhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-4 bg-gray-100 shadow-md" style="border-color: var(--primary)"><img src="${couple.groomPhoto}" class="w-full h-full object-cover"></div>`;
-                 if(couple.bridePhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-4 bg-gray-100 shadow-md" style="border-color: var(--primary)"><img src="${couple.bridePhoto}" class="w-full h-full object-cover"></div>`;
+                 if(couple.groomPhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-4 bg-gray-100 shadow-md flex items-center justify-center" style="border-color: var(--primary)"><img src="${couple.groomPhoto}" class="w-full h-full object-cover"></div>`;
+                 if(couple.bridePhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-4 bg-gray-100 shadow-md flex items-center justify-center" style="border-color: var(--primary)"><img src="${couple.bridePhoto}" class="w-full h-full object-cover"></div>`;
                  html += `</div>`;
             }
 
@@ -1029,7 +1026,7 @@
         }
 
         /* ==========================================
-           IMAGE UPLOAD & COMPRESSION LOGIC
+           IMAGE UPLOAD (COMPRESSION & DIRECT SAVE)
            ========================================== */
            
         // Helper to compress image and convert to Base64 (Data URL)
@@ -1045,8 +1042,8 @@
                         let width = img.width;
                         let height = img.height;
 
-                        // Initial structural resize if image is huge (helps quality loop)
-                        const maxDim = 800;
+                        // Initial structural resize to keep dimensions manageable
+                        const maxDim = 600;
                         if (width > height && width > maxDim) {
                             height = Math.round(height * (maxDim / width));
                             width = maxDim;
@@ -1060,7 +1057,7 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        let quality = 0.9;
+                        let quality = 0.8;
                         let base64String = canvas.toDataURL('image/jpeg', quality);
                         
                         // Estimate size of base64 in KB
@@ -1086,37 +1083,27 @@
             if(!file) return;
 
             try {
-                showLoader("Compressing Image...");
+                showLoader("Processing Image...");
                 
                 // 1. Compress image client-side to maximum 150KB
                 const base64Data = await compressImageToBase64(file, 150);
                 
-                document.getElementById('loader-text').innerText = "Uploading to Storage...";
-                
-                // 2. Upload Base64 Data URL to Firebase Storage
-                const storageRef = ref(storage, `users/${currentUser.uid}/invitations/${state.editingId}/${targetField}_${Date.now()}`);
-                
-                // Using uploadString for Base64 format
-                await uploadString(storageRef, base64Data, 'data_url');
-                
-                const url = await getDownloadURL(storageRef);
-                
-                // 3. Save generated Storage URL to document
-                state.data.couple[targetField] = url;
+                // 2. Save generated Base64 Data directly to document state (No Firebase Storage used!)
+                state.data.couple[targetField] = base64Data;
                 
                 const imgEl = document.getElementById(`prev-${targetField.replace('Photo', '')}-photo`);
                 const iconEl = document.getElementById(`icon-${targetField.replace('Photo', '')}-photo`);
                 if(imgEl && iconEl) {
-                    imgEl.src = url;
+                    imgEl.src = base64Data;
                     imgEl.classList.remove('hidden');
                     iconEl.classList.add('hidden');
                 }
                 
-                handleEditorInput(); // Triggers preview update and auto-save
-                showToast("Image processed and uploaded!", "success");
+                handleEditorInput(); // Triggers auto-save to Firestore
+                showToast("Image processed successfully!", "success");
             } catch(e) {
                 console.error(e);
-                showToast("Upload failed.", "error");
+                showToast("Image processing failed.", "error");
             } finally {
                 hideLoader();
             }
