@@ -1,1397 +1,1690 @@
 window.registerTemplate({
-    id: 'emerald-garden-nikah',
-    name: 'Emerald Garden Nikah',
-    thumb: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=700&auto=format&fit=crop',
-    freeform: false,
-    scrollable: true,
-    defaults: {
-        colors: {
-            primary: '#C9A85B',
-            bg: '#163B2C',
-            text: '#F7F1DF'
-        },
-        fonts: {
-            heading: "'Playfair Display', serif"
-        }
-    },
-    render: function(d, isEditMode) {
-        const escape = (value, fallback = '') => String(value || fallback)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+id: 'emerald-garden-nikah',
+name: 'Emerald Garden Nikah',
+thumb: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=700&auto=format&fit=crop',
+freeform: false,
+scrollable: true,
+defaults: {
+colors: {
+primary: '#C9A85B',
+bg: '#163B2C',
+text: '#F7F1DF'
+},
+fonts: {
+heading: "'Playfair Display', serif"
+}
+},
+render: function(d, isEditMode) {
+const couple = d.couple || {};
+const content = d.content || {};
+const mainEvent = d.mainEvent || {};
+const design = d.design || {};
+const set = d.settings || {};
 
-        const couple = d?.couple || {};
-        const content = d?.content || {};
-        const mainEvent = d?.mainEvent || {};
-        const design = d?.design || {};
-        const settings = d?.settings || {};
-        const colors = design.colors || {};
+    const colors = {
+        primary: design.colors?.primary || '#C9A85B',
+        bg: design.colors?.bg || '#163B2C',
+        text: design.colors?.text || '#F7F1DF'
+    };
 
-        const primary = escape(colors.primary, '#C9A85B');
-        const bg = escape(colors.bg, '#163B2C');
-        const text = escape(colors.text, '#F7F1DF');
+    const escape = (value, fallback = '') => String(value || fallback)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 
-        const groom = escape(couple.groom, 'Groom Name');
-        const bride = escape(couple.bride, 'Bride Name');
-        const groomPhoto = escape(couple.groomPhoto, '');
-        const bridePhoto = escape(couple.bridePhoto, '');
-
-        const bismillah = escape(
-            content.bismillah,
-            'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ'
-        );
-
-        const heading = escape(content.heading, 'Save the Date');
-
-        const message = escape(
-            content.message,
-            'With the blessings of Allah and the love of our families, we invite you to celebrate our special day with us.'
-        );
-
-        const arabicText = escape(
-            content.arabicText,
-            'وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا'
-        );
-
-        const translation = escape(
-            content.translation,
-            'And among His signs is that He created for you spouses from among yourselves so that you may find tranquility in them.'
-        );
-
-        const eventTitle = escape(
-            mainEvent.title,
-            'Wedding Ceremony'
-        );
-
-        const eventDate = escape(
-            mainEvent.date,
-            'Wedding Date'
-        );
-
-        const eventTime = escape(
-            mainEvent.time,
-            'Wedding Time'
-        );
-
-        const venue = escape(
-            mainEvent.venue,
-            'Venue Name'
-        );
-
-        const address = escape(
-            mainEvent.address,
-            'Wedding Address'
-        );
-
-        const mapUrlRaw = String(mainEvent.mapUrl || '').trim();
-
-        const safeMapUrl = /^https?:\/\//i.test(mapUrlRaw)
-            ? escape(mapUrlRaw)
-            : '';
-
-        const edit = (key, html, visibilityKey) => {
-            if (visibilityKey && settings[visibilityKey] === false) {
-                return isEditMode
-                    ? `<div class="template-hidden" data-edit="${key}">${html}</div>`
-                    : '';
-            }
-
+    const edit = (key, html, visibilityKey) => {
+        if (visibilityKey && set[visibilityKey] === false) {
             return isEditMode
-                ? `<div class="template-editable" data-edit="${key}">
-                    <span class="template-edit-pen">
-                        <i class="fa-solid fa-pen"></i>
-                    </span>
-                    ${html}
-                </div>`
-                : html;
-        };
+                ? `<div class="template-hidden" data-edit="${key}">${html}</div>`
+                : '';
+        }
 
-        const couplePhoto = (src, alt, fallbackClass) => {
-            if (src) {
-                return `
-                    <div class="portrait-frame ${fallbackClass}">
-                        <img
-                            src="${src}"
-                            alt="${alt}"
-                            loading="lazy"
-                        >
-                        <span class="portrait-shine"></span>
-                    </div>
-                `;
-            }
+        return isEditMode
+            ? `<div class="template-editable" data-edit="${key}">
+                <span class="template-edit-pen">
+                    <i class="fa-solid fa-pen"></i>
+                </span>
+                ${html}
+            </div>`
+            : html;
+    };
 
+    const groom = escape(couple.groom, 'Groom Name');
+    const bride = escape(couple.bride, 'Bride Name');
+
+    const groomPhoto = escape(couple.groomPhoto, '');
+    const bridePhoto = escape(couple.bridePhoto, '');
+
+    const bismillah = escape(
+        content.bismillah,
+        'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ'
+    );
+
+    const heading = escape(
+        content.heading,
+        'Save the Date'
+    );
+
+    const message = escape(
+        content.message,
+        'With the blessings of Allah and the love of our families, we invite you to celebrate our special day with us.'
+    );
+
+    const arabicText = escape(
+        content.arabicText,
+        'وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا'
+    );
+
+    const translation = escape(
+        content.translation,
+        'And among His signs is that He created for you spouses from among yourselves so that you may find tranquility in them.'
+    );
+
+    const eventTitle = escape(
+        mainEvent.title,
+        'Wedding Ceremony'
+    );
+
+    const eventDateRaw = String(mainEvent.date || '').trim();
+
+    const eventTime = escape(
+        mainEvent.time,
+        'Wedding Time'
+    );
+
+    const venue = escape(
+        mainEvent.venue,
+        'Venue Name'
+    );
+
+    const address = escape(
+        mainEvent.address,
+        'Wedding Address'
+    );
+
+    const mapUrlRaw = String(mainEvent.mapUrl || '').trim();
+
+    const safeMapUrl = /^https?:\/\//i.test(mapUrlRaw)
+        ? escape(mapUrlRaw)
+        : '';
+
+    const dateObject = /^\d{4}-\d{2}-\d{2}$/.test(eventDateRaw)
+        ? new Date(`${eventDateRaw}T00:00:00`)
+        : null;
+
+    const formattedDate = dateObject
+        ? new Intl.DateTimeFormat('en-GB', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }).format(dateObject)
+        : 'Wedding Date';
+
+    const getPhoto = (photo, name, type) => {
+        if (photo) {
             return `
-                <div
-                    class="portrait-frame ${fallbackClass} portrait-placeholder"
-                    aria-hidden="true"
-                >
-                    <i class="fa-regular fa-user"></i>
+                <div class="eg-photo-frame ${type}">
+                    <img
+                        src="${photo}"
+                        alt="${name}"
+                        loading="lazy"
+                    >
+                    <span class="eg-photo-glow"></span>
                 </div>
             `;
-        };
-
-        const mapAction = safeMapUrl
-            ? `
-                <a
-                    class="location-button"
-                    href="${safeMapUrl}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Get directions to the wedding venue"
-                >
-                    <span class="location-icon">
-                        <i class="fa-solid fa-location-dot"></i>
-                    </span>
-
-                    <span>Get Directions</span>
-
-                    <i class="fa-solid fa-arrow-up-right-from-square external-icon"></i>
-                </a>
-            `
-            : '';
+        }
 
         return `
-            <style>
-                .emerald-garden-template,
-                .emerald-garden-template * {
-                    box-sizing: border-box;
-                }
+            <div class="eg-photo-frame ${type} eg-photo-placeholder">
+                <span>
+                    <i class="fa-regular fa-user"></i>
+                </span>
+            </div>
+        `;
+    };
 
-                .emerald-garden-template {
-                    --eg-primary: ${primary};
-                    --eg-bg: ${bg};
-                    --eg-text: ${text};
-                    --eg-soft: color-mix(
-                        in srgb,
-                        var(--eg-text) 72%,
-                        transparent
-                    );
-                    --eg-line: color-mix(
-                        in srgb,
-                        var(--eg-primary) 42%,
-                        transparent
-                    );
+    const mapButton = safeMapUrl
+        ? `
+            <a
+                class="eg-location-button"
+                href="${safeMapUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Get directions to the wedding venue"
+            >
+                <span class="eg-location-icon">
+                    <i class="fa-solid fa-location-dot"></i>
+                </span>
+                <span>Get Directions</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+        `
+        : '';
 
-                    position: relative;
-                    width: 100%;
-                    min-height: 100vh;
-                    overflow: hidden;
+    return `
+        <style>
+            .eg-template,
+            .eg-template * {
+                box-sizing: border-box;
+            }
 
-                    background:
-                        radial-gradient(
-                            circle at 12% 8%,
-                            rgba(201, 168, 91, 0.13),
-                            transparent 25%
-                        ),
-                        radial-gradient(
-                            circle at 88% 22%,
-                            rgba(255, 255, 255, 0.05),
-                            transparent 28%
-                        ),
-                        linear-gradient(
-                            180deg,
-                            var(--eg-bg) 0%,
-                            #102d22 48%,
-                            var(--eg-bg) 100%
-                        );
+            .eg-template {
+                --eg-primary: ${escape(colors.primary, '#C9A85B')};
+                --eg-bg: ${escape(colors.bg, '#163B2C')};
+                --eg-text: ${escape(colors.text, '#F7F1DF')};
 
-                    color: var(--eg-text);
-                    font-family: "Inter", system-ui, sans-serif;
-                    isolation: isolate;
-                }
+                --eg-muted: color-mix(
+                    in srgb,
+                    var(--eg-text) 70%,
+                    transparent
+                );
 
-                .emerald-garden-template::before {
-                    content: "";
-                    position: absolute;
-                    inset: 0;
-                    z-index: -1;
-                    pointer-events: none;
-                    opacity: .35;
+                --eg-border: color-mix(
+                    in srgb,
+                    var(--eg-primary) 45%,
+                    transparent
+                );
 
-                    background-image:
-                        radial-gradient(
-                            circle at 20% 30%,
-                            rgba(255,255,255,.08) 0 1px,
-                            transparent 1.5px
-                        ),
-                        radial-gradient(
-                            circle at 80% 65%,
-                            rgba(255,255,255,.07) 0 1px,
-                            transparent 1.5px
-                        );
+                width: 100%;
+                min-height: 100vh;
 
-                    background-size:
-                        80px 80px,
-                        110px 110px;
-                }
+                position: relative;
+                overflow: hidden;
 
-                .eg-shell {
-                    position: relative;
-                    width: 100%;
-                    max-width: 680px;
-                    margin: 0 auto;
-                    padding: 18px 16px 48px;
-                }
+                color: var(--eg-text);
 
-                .eg-ornament {
-                    position: absolute;
-                    z-index: -1;
+                font-family:
+                    "Inter",
+                    system-ui,
+                    sans-serif;
 
-                    width: 170px;
-                    height: 170px;
-
-                    border: 1px solid var(--eg-line);
-                    border-radius: 50%;
-
-                    opacity: .45;
-                    pointer-events: none;
-                }
-
-                .eg-ornament::before,
-                .eg-ornament::after {
-                    content: "";
-                    position: absolute;
-                    inset: 18px;
-
-                    border: 1px solid var(--eg-line);
-                    border-radius: 50%;
-                }
-
-                .eg-ornament::after {
-                    inset: 36px;
-                    border-style: dashed;
-                    opacity: .6;
-                }
-
-                .eg-ornament.one {
-                    top: 45px;
-                    left: -115px;
-                }
-
-                .eg-ornament.two {
-                    top: 500px;
-                    right: -115px;
-                }
-
-                .eg-flower {
-                    position: absolute;
-                    width: 58px;
-                    height: 58px;
-
-                    opacity: .8;
-                    pointer-events: none;
-
-                    animation:
-                        eg-float 7s ease-in-out infinite;
-                }
-
-                .eg-flower::before,
-                .eg-flower::after {
-                    content: "";
-                    position: absolute;
-
-                    width: 26px;
-                    height: 38px;
-
-                    border: 1px solid var(--eg-primary);
-                    border-radius: 100% 0 100% 0;
-
-                    transform-origin: bottom center;
-                }
-
-                .eg-flower::before {
-                    top: 0;
-                    left: 16px;
-                    transform: rotate(-28deg);
-                }
-
-                .eg-flower::after {
-                    top: 0;
-                    left: 16px;
-                    transform:
-                        rotate(28deg)
-                        scaleX(-1);
-                }
-
-                .eg-flower i {
-                    position: absolute;
-
-                    width: 10px;
-                    height: 10px;
-
-                    left: 24px;
-                    top: 22px;
-
-                    border: 1px solid var(--eg-primary);
-                    border-radius: 50%;
-
-                    background: var(--eg-bg);
-                }
-
-                .eg-flower.a {
-                    top: 160px;
-                    right: 2px;
-                }
-
-                .eg-flower.b {
-                    top: 790px;
-                    left: 0;
-
-                    transform: scale(.72);
-
-                    animation-delay: -3s;
-                }
-
-                .eg-top {
-                    padding: 22px 10px 18px;
-                    text-align: center;
-                }
-
-                .eg-bismillah {
-                    color: var(--eg-primary);
-
-                    font-family:
-                        "Amiri",
-                        "Noto Naskh Arabic",
-                        serif;
-
-                    font-size:
-                        clamp(22px, 6vw, 31px);
-
-                    line-height: 1.8;
-
-                    text-shadow:
-                        0 2px 18px rgba(0,0,0,.18);
-                }
-
-                .eg-mini-label {
-                    margin-top: 10px;
-
-                    color: var(--eg-soft);
-
-                    font-size: 9px;
-                    font-weight: 700;
-
-                    letter-spacing: .32em;
-                    text-transform: uppercase;
-                }
-
-                .eg-hero {
-                    position: relative;
-
-                    padding: 34px 6px 38px;
-
-                    text-align: center;
-                }
-
-                .eg-hero::before {
-                    content: "";
-
-                    position: absolute;
-
-                    top: 0;
-                    left: 50%;
-
-                    width: 1px;
-                    height: 28px;
-
-                    background:
-                        linear-gradient(
-                            var(--eg-primary),
+                background:
+                    radial-gradient(
+                        circle at 8% 7%,
+                        color-mix(
+                            in srgb,
+                            var(--eg-primary) 14%,
                             transparent
-                        );
+                        ) 0,
+                        transparent 27%
+                    ),
+                    radial-gradient(
+                        circle at 92% 24%,
+                        rgba(255,255,255,.045),
+                        transparent 28%
+                    ),
+                    linear-gradient(
+                        180deg,
+                        var(--eg-bg) 0%,
+                        color-mix(
+                            in srgb,
+                            var(--eg-bg) 84%,
+                            #000
+                        ) 55%,
+                        var(--eg-bg) 100%
+                    );
+            }
+
+            .eg-template::before {
+                content: "";
+
+                position: absolute;
+                inset: 0;
+
+                pointer-events: none;
+
+                opacity: .28;
+
+                background-image:
+                    radial-gradient(
+                        circle,
+                        rgba(255,255,255,.16) 0 1px,
+                        transparent 1.5px
+                    );
+
+                background-size: 85px 85px;
+            }
+
+            .eg-page {
+                position: relative;
+
+                width: 100%;
+                max-width: 720px;
+
+                margin: 0 auto;
+
+                padding:
+                    24px 18px
+                    60px;
+            }
+
+            .eg-corner {
+                position: absolute;
+
+                width: 125px;
+                height: 125px;
+
+                border:
+                    1px solid var(--eg-border);
+
+                opacity: .65;
+
+                pointer-events: none;
+            }
+
+            .eg-corner::before,
+            .eg-corner::after {
+                content: "";
+
+                position: absolute;
+
+                border:
+                    1px solid var(--eg-border);
+            }
+
+            .eg-corner::before {
+                inset: 10px;
+            }
+
+            .eg-corner::after {
+                inset: 22px;
+            }
+
+            .eg-corner.top-left {
+                top: 25px;
+                left: -70px;
+
+                border-right: 0;
+                border-bottom: 0;
+
+                border-radius:
+                    100% 0 0 0;
+            }
+
+            .eg-corner.top-right {
+                top: 25px;
+                right: -70px;
+
+                border-left: 0;
+                border-bottom: 0;
+
+                border-radius:
+                    0 100% 0 0;
+            }
+
+            .eg-corner.bottom-left {
+                bottom: 30px;
+                left: -70px;
+
+                border-right: 0;
+                border-top: 0;
+
+                border-radius:
+                    0 0 0 100%;
+            }
+
+            .eg-corner.bottom-right {
+                bottom: 30px;
+                right: -70px;
+
+                border-left: 0;
+                border-top: 0;
+
+                border-radius:
+                    0 0 100% 0;
+            }
+
+            .eg-flower {
+                position: absolute;
+
+                width: 70px;
+                height: 70px;
+
+                opacity: .75;
+
+                pointer-events: none;
+
+                animation:
+                    eg-flower-float
+                    7s
+                    ease-in-out
+                    infinite;
+            }
+
+            .eg-flower.left {
+                top: 170px;
+                left: -17px;
+            }
+
+            .eg-flower.right {
+                top: 700px;
+                right: -18px;
+
+                animation-delay: -3s;
+            }
+
+            .eg-flower.bottom {
+                bottom: 160px;
+                left: 8px;
+
+                animation-delay: -5s;
+            }
+
+            .eg-flower span {
+                position: absolute;
+
+                left: 27px;
+                top: 5px;
+
+                width: 17px;
+                height: 34px;
+
+                border:
+                    1px solid var(--eg-primary);
+
+                border-radius:
+                    100% 0 100% 0;
+
+                transform-origin:
+                    8px 30px;
+            }
+
+            .eg-flower span:nth-child(1) {
+                transform: rotate(0deg) translateY(-10px);
+            }
+
+            .eg-flower span:nth-child(2) {
+                transform: rotate(45deg) translateY(-10px);
+            }
+
+            .eg-flower span:nth-child(3) {
+                transform: rotate(90deg) translateY(-10px);
+            }
+
+            .eg-flower span:nth-child(4) {
+                transform: rotate(135deg) translateY(-10px);
+            }
+
+            .eg-flower span:nth-child(5) {
+                transform: rotate(180deg) translateY(-10px);
+            }
+
+            .eg-flower span:nth-child(6) {
+                transform: rotate(225deg) translateY(-10px);
+            }
+
+            .eg-flower span:nth-child(7) {
+                transform: rotate(270deg) translateY(-10px);
+            }
+
+            .eg-flower span:nth-child(8) {
+                transform: rotate(315deg) translateY(-10px);
+            }
+
+            .eg-flower i {
+                position: absolute;
+
+                left: 27px;
+                top: 27px;
+
+                width: 16px;
+                height: 16px;
+
+                border:
+                    1px solid var(--eg-primary);
+
+                border-radius: 50%;
+
+                background: var(--eg-bg);
+            }
+
+            .eg-top {
+                position: relative;
+
+                min-height: 180px;
+
+                display: flex;
+                flex-direction: column;
+
+                align-items: center;
+                justify-content: center;
+
+                text-align: center;
+            }
+
+            .eg-bismillah {
+                color: var(--eg-primary);
+
+                font-family:
+                    "Amiri",
+                    "Noto Naskh Arabic",
+                    serif;
+
+                font-size:
+                    clamp(23px, 7vw, 34px);
+
+                line-height: 1.8;
+            }
+
+            .eg-top-caption {
+                margin-top: 8px;
+
+                color: var(--eg-muted);
+
+                font-size: 8px;
+                font-weight: 700;
+
+                letter-spacing: .28em;
+
+                text-transform: uppercase;
+            }
+
+            .eg-divider {
+                display: flex;
+
+                align-items: center;
+                justify-content: center;
+
+                gap: 9px;
+
+                margin: 12px auto;
+            }
+
+            .eg-divider::before,
+            .eg-divider::after {
+                content: "";
+
+                width: 62px;
+                height: 1px;
+
+                background:
+                    linear-gradient(
+                        90deg,
+                        transparent,
+                        var(--eg-primary)
+                    );
+            }
+
+            .eg-divider::after {
+                background:
+                    linear-gradient(
+                        90deg,
+                        var(--eg-primary),
+                        transparent
+                    );
+            }
+
+            .eg-divider-dot {
+                width: 6px;
+                height: 6px;
+
+                transform: rotate(45deg);
+
+                background: var(--eg-primary);
+            }
+
+            .eg-hero {
+                position: relative;
+
+                padding:
+                    50px 8px
+                    45px;
+
+                text-align: center;
+            }
+
+            .eg-hero-small {
+                margin-bottom: 14px;
+
+                color: var(--eg-primary);
+
+                font-size: 8px;
+                font-weight: 800;
+
+                letter-spacing: .3em;
+
+                text-transform: uppercase;
+            }
+
+            .eg-heading {
+                margin: 0;
+
+                color: var(--eg-text);
+
+                font-family:
+                    "Playfair Display",
+                    Georgia,
+                    serif;
+
+                font-size:
+                    clamp(36px, 11vw, 66px);
+
+                line-height: .98;
+
+                font-weight: 500;
+
+                letter-spacing: -.045em;
+            }
+
+            .eg-heading-line {
+                width: 75px;
+                height: 1px;
+
+                margin:
+                    24px auto 0;
+
+                background: var(--eg-primary);
+            }
+
+            .eg-couple {
+                position: relative;
+
+                display: grid;
+
+                grid-template-columns:
+                    minmax(0, 1fr)
+                    40px
+                    minmax(0, 1fr);
+
+                align-items: center;
+
+                gap: 8px;
+
+                padding:
+                    10px 4px
+                    40px;
+            }
+
+            .eg-person {
+                min-width: 0;
+
+                text-align: center;
+            }
+
+            .eg-photo-frame {
+                position: relative;
+
+                width:
+                    clamp(112px, 32vw, 158px);
+
+                height:
+                    clamp(112px, 32vw, 158px);
+
+                margin:
+                    0 auto 18px;
+
+                padding: 5px;
+
+                border:
+                    1px solid var(--eg-primary);
+
+                border-radius: 50%;
+
+                background:
+                    rgba(255,255,255,.025);
+
+                box-shadow:
+                    0 0 0 7px
+                    color-mix(
+                        in srgb,
+                        var(--eg-primary) 6%,
+                        transparent
+                    );
+
+                overflow: hidden;
+            }
+
+            .eg-photo-frame::before {
+                content: "";
+
+                position: absolute;
+
+                inset: 9px;
+
+                border:
+                    1px solid
+                    color-mix(
+                        in srgb,
+                        var(--eg-primary) 55%,
+                        transparent
+                    );
+
+                border-radius: 50%;
+
+                z-index: 2;
+
+                pointer-events: none;
+            }
+
+            .eg-photo-frame img {
+                width: 100%;
+                height: 100%;
+
+                display: block;
+
+                object-fit: cover;
+
+                border-radius: 50%;
+            }
+
+            .eg-photo-placeholder {
+                display: grid;
+                place-items: center;
+
+                color: var(--eg-primary);
+            }
+
+            .eg-photo-placeholder span {
+                display: grid;
+                place-items: center;
+
+                width: 100%;
+                height: 100%;
+
+                border-radius: 50%;
+
+                background:
+                    radial-gradient(
+                        circle,
+                        rgba(255,255,255,.08),
+                        transparent 70%
+                    );
+
+                font-size: 28px;
+            }
+
+            .eg-photo-glow {
+                position: absolute;
+
+                inset: 0;
+
+                border-radius: 50%;
+
+                background:
+                    linear-gradient(
+                        120deg,
+                        transparent 35%,
+                        rgba(255,255,255,.18),
+                        transparent 65%
+                    );
+
+                transform:
+                    translateX(-130%);
+
+                animation:
+                    eg-photo-shine
+                    7s
+                    ease-in-out
+                    infinite;
+
+                pointer-events: none;
+                z-index: 3;
+            }
+
+            .eg-person-name {
+                color: var(--eg-text);
+
+                font-family:
+                    "Playfair Display",
+                    Georgia,
+                    serif;
+
+                font-size:
+                    clamp(19px, 5.5vw, 28px);
+
+                line-height: 1.1;
+
+                overflow-wrap: anywhere;
+            }
+
+            .eg-person-role {
+                margin-top: 8px;
+
+                color: var(--eg-primary);
+
+                font-size: 8px;
+                font-weight: 800;
+
+                letter-spacing: .22em;
+
+                text-transform: uppercase;
+            }
+
+            .eg-amp {
+                position: relative;
+
+                z-index: 4;
+
+                display: grid;
+                place-items: center;
+
+                width: 38px;
+                height: 38px;
+
+                margin: 0 auto;
+
+                border:
+                    1px solid var(--eg-border);
+
+                border-radius: 50%;
+
+                color: var(--eg-primary);
+
+                font-family:
+                    "Playfair Display",
+                    Georgia,
+                    serif;
+
+                font-size: 21px;
+
+                background: var(--eg-bg);
+            }
+
+            .eg-message-section {
+                position: relative;
+
+                margin:
+                    35px 0
+                    25px;
+
+                padding:
+                    38px 22px;
+
+                text-align: center;
+
+                border-top:
+                    1px solid var(--eg-border);
+
+                border-bottom:
+                    1px solid var(--eg-border);
+            }
+
+            .eg-message-section::before,
+            .eg-message-section::after {
+                content: "✦";
+
+                position: absolute;
+
+                top: -9px;
+
+                padding: 0 8px;
+
+                color: var(--eg-primary);
+
+                background: var(--eg-bg);
+
+                font-size: 13px;
+            }
+
+            .eg-message-section::before {
+                left: 15%;
+            }
+
+            .eg-message-section::after {
+                right: 15%;
+            }
+
+            .eg-message {
+                margin: 0;
+
+                color: var(--eg-muted);
+
+                font-family:
+                    "Playfair Display",
+                    Georgia,
+                    serif;
+
+                font-size:
+                    clamp(16px, 4.5vw, 20px);
+
+                line-height: 1.8;
+            }
+
+            .eg-quote {
+                position: relative;
+
+                margin:
+                    55px 0
+                    35px;
+
+                padding:
+                    42px 20px
+                    34px;
+
+                text-align: center;
+
+                border:
+                    1px solid var(--eg-border);
+
+                background:
+                    rgba(255,255,255,.018);
+            }
+
+            .eg-quote-symbol {
+                position: absolute;
+
+                top: -18px;
+                left: 50%;
+
+                display: grid;
+                place-items: center;
+
+                width: 36px;
+                height: 36px;
+
+                transform:
+                    translateX(-50%);
+
+                border:
+                    1px solid var(--eg-primary);
+
+                border-radius: 50%;
+
+                color: var(--eg-primary);
+
+                background: var(--eg-bg);
+
+                font-family: Georgia, serif;
+
+                font-size: 25px;
+            }
+
+            .eg-arabic {
+                margin: 0;
+
+                direction: rtl;
+
+                color: var(--eg-text);
+
+                font-family:
+                    "Amiri",
+                    "Noto Naskh Arabic",
+                    serif;
+
+                font-size:
+                    clamp(22px, 6vw, 31px);
+
+                line-height: 2;
+            }
+
+            .eg-translation {
+                max-width: 520px;
+
+                margin:
+                    20px auto 0;
+
+                color: var(--eg-muted);
+
+                font-family:
+                    "Playfair Display",
+                    Georgia,
+                    serif;
+
+                font-size: 14px;
+
+                line-height: 1.8;
+
+                font-style: italic;
+            }
+
+            .eg-event {
+                position: relative;
+
+                margin:
+                    45px 0
+                    30px;
+
+                padding:
+                    32px 17px;
+
+                text-align: center;
+
+                border:
+                    1px solid var(--eg-border);
+
+                background:
+                    rgba(255,255,255,.018);
+            }
+
+            .eg-event-kicker {
+                margin-bottom: 9px;
+
+                color: var(--eg-primary);
+
+                font-size: 8px;
+                font-weight: 800;
+
+                letter-spacing: .28em;
+
+                text-transform: uppercase;
+            }
+
+            .eg-event-title {
+                margin: 0 0 26px;
+
+                color: var(--eg-text);
+
+                font-family:
+                    "Playfair Display",
+                    Georgia,
+                    serif;
+
+                font-size:
+                    clamp(24px, 7vw, 34px);
+
+                line-height: 1.2;
+            }
+
+            .eg-event-grid {
+                display: grid;
+
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+
+                border-top:
+                    1px solid var(--eg-border);
+
+                border-bottom:
+                    1px solid var(--eg-border);
+            }
+
+            .eg-event-item {
+                min-width: 0;
+
+                padding:
+                    19px 9px;
+            }
+
+            .eg-event-item:nth-child(2n) {
+                border-left:
+                    1px solid var(--eg-border);
+            }
+
+            .eg-event-item:nth-child(n+3) {
+                border-top:
+                    1px solid var(--eg-border);
+            }
+
+            .eg-event-icon {
+                margin-bottom: 8px;
+
+                color: var(--eg-primary);
+
+                font-size: 15px;
+            }
+
+            .eg-event-label {
+                display: block;
+
+                margin-bottom: 5px;
+
+                color: var(--eg-muted);
+
+                font-size: 7px;
+                font-weight: 800;
+
+                letter-spacing: .16em;
+
+                text-transform: uppercase;
+            }
+
+            .eg-event-value {
+                display: block;
+
+                color: var(--eg-text);
+
+                font-family:
+                    "Playfair Display",
+                    Georgia,
+                    serif;
+
+                font-size: 14px;
+
+                line-height: 1.4;
+
+                overflow-wrap: anywhere;
+            }
+
+            .eg-venue {
+                padding-top: 25px;
+            }
+
+            .eg-venue-name {
+                margin: 0;
+
+                color: var(--eg-text);
+
+                font-family:
+                    "Playfair Display",
+                    Georgia,
+                    serif;
+
+                font-size:
+                    clamp(22px, 6vw, 30px);
+
+                line-height: 1.2;
+
+                overflow-wrap: anywhere;
+            }
+
+            .eg-address {
+                max-width: 500px;
+
+                margin:
+                    9px auto 0;
+
+                color: var(--eg-muted);
+
+                font-size: 12px;
+
+                line-height: 1.7;
+
+                overflow-wrap: anywhere;
+            }
+
+            .eg-map {
+                margin-top: 24px;
+            }
+
+            .eg-location-button {
+                display: inline-flex;
+
+                align-items: center;
+                justify-content: center;
+
+                gap: 10px;
+
+                min-height: 48px;
+
+                max-width: 100%;
+
+                padding:
+                    11px 18px;
+
+                border:
+                    1px solid var(--eg-primary);
+
+                border-radius: 999px;
+
+                color: var(--eg-text);
+
+                background:
+                    color-mix(
+                        in srgb,
+                        var(--eg-primary) 8%,
+                        transparent
+                    );
+
+                text-decoration: none;
+
+                font-size: 10px;
+                font-weight: 800;
+
+                letter-spacing: .1em;
+
+                text-transform: uppercase;
+            }
+
+            .eg-location-icon {
+                display: grid;
+                place-items: center;
+
+                width: 24px;
+                height: 24px;
+
+                border-radius: 50%;
+
+                color: var(--eg-bg);
+
+                background:
+                    var(--eg-primary);
+            }
+
+            .eg-closing {
+                padding:
+                    55px 10px
+                    20px;
+
+                text-align: center;
+            }
+
+            .eg-closing-symbol {
+                color: var(--eg-primary);
+
+                font-size: 17px;
+
+                letter-spacing: .35em;
+            }
+
+            .eg-closing-text {
+                margin-top: 13px;
+
+                color: var(--eg-muted);
+
+                font-size: 8px;
+                font-weight: 700;
+
+                letter-spacing: .22em;
+
+                text-transform: uppercase;
+            }
+
+            .template-editable {
+                position: relative;
+
+                border-radius: 5px;
+
+                outline:
+                    1px dashed
+                    rgba(37,99,235,.7);
+
+                outline-offset: 5px;
+            }
+
+            .template-edit-pen {
+                position: absolute;
+
+                top: 7px;
+                right: 7px;
+
+                z-index: 50;
+
+                display: grid;
+                place-items: center;
+
+                width: 28px;
+                height: 28px;
+
+                border-radius: 50%;
+
+                color: #fff;
+
+                background: #2563eb;
+
+                box-shadow:
+                    0 4px 14px
+                    rgba(37,99,235,.35);
+
+                font-size: 11px;
+
+                pointer-events: none;
+            }
+
+            .template-hidden {
+                position: relative;
+
+                display: block;
+
+                min-height: 10px;
+
+                opacity: .42;
+
+                outline:
+                    1px dashed
+                    rgba(37,99,235,.65);
+
+                outline-offset: 5px;
+            }
+
+            .template-hidden::after {
+                content: "Hidden";
+
+                position: absolute;
+
+                top: 5px;
+                right: 5px;
+
+                padding:
+                    4px 7px;
+
+                border-radius: 4px;
+
+                color: #fff;
+
+                background: #2563eb;
+
+                font:
+                    700 8px/1
+                    system-ui,
+                    sans-serif;
+
+                letter-spacing: .04em;
+            }
+
+            @keyframes eg-flower-float {
+                0%,
+                100% {
+                    transform:
+                        translateY(0)
+                        rotate(-2deg);
                 }
 
-                .eg-heading {
-                    margin: 0 0 22px;
+                50% {
+                    transform:
+                        translateY(-10px)
+                        rotate(4deg);
+                }
+            }
 
-                    color: var(--eg-text);
-
-                    font-family:
-                        "Playfair Display",
-                        Georgia,
-                        serif;
-
-                    font-size:
-                        clamp(30px, 9vw, 52px);
-
-                    line-height: 1.05;
-                    font-weight: 500;
-
-                    letter-spacing: -.035em;
+            @keyframes eg-photo-shine {
+                0%,
+                55%,
+                100% {
+                    transform:
+                        translateX(-130%);
                 }
 
-                .eg-heading::after {
-                    content: "";
+                72% {
+                    transform:
+                        translateX(130%);
+                }
+            }
 
-                    display: block;
-
-                    width: 55px;
-                    height: 1px;
-
-                    margin:
-                        17px auto 0;
-
-                    background: var(--eg-primary);
-
-                    box-shadow:
-                        20px 0 0 rgba(201,168,91,.25),
-                        -20px 0 0 rgba(201,168,91,.25);
+            @media (max-width: 380px) {
+                .eg-page {
+                    padding-left: 13px;
+                    padding-right: 13px;
                 }
 
                 .eg-couple {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-
-                    gap:
-                        clamp(14px, 5vw, 28px);
-
-                    margin-top: 22px;
+                    gap: 4px;
+                    padding-left: 0;
+                    padding-right: 0;
                 }
 
-                .eg-person {
-                    width: min(40%, 190px);
-                    text-align: center;
+                .eg-amp {
+                    width: 32px;
+                    height: 32px;
+                    font-size: 17px;
                 }
 
-                .portrait-frame {
-                    position: relative;
-
-                    width:
-                        min(32vw, 150px);
-
-                    height:
-                        min(32vw, 150px);
-
-                    min-width: 104px;
-                    min-height: 104px;
-
-                    margin: 0 auto 15px;
-
-                    padding: 5px;
-
-                    border:
-                        1px solid var(--eg-primary);
-
-                    border-radius: 50%;
-
-                    background:
-                        rgba(255,255,255,.035);
-
-                    box-shadow:
-                        0 0 0 5px rgba(201,168,91,.055),
-                        0 18px 45px rgba(0,0,0,.18);
-
-                    overflow: hidden;
-                }
-
-                .portrait-frame::before {
-                    content: "";
-
-                    position: absolute;
-                    inset: 8px;
-
-                    border:
-                        1px solid rgba(201,168,91,.45);
-
-                    border-radius: 50%;
-
-                    pointer-events: none;
-                    z-index: 2;
-                }
-
-                .portrait-frame img {
-                    display: block;
-
-                    width: 100%;
-                    height: 100%;
-
-                    object-fit: cover;
-
-                    border-radius: 50%;
-                }
-
-                .portrait-placeholder {
-                    display: grid;
-                    place-items: center;
-
-                    color: var(--eg-primary);
-                    font-size: 30px;
-                }
-
-                .portrait-shine {
-                    position: absolute;
-                    inset: 0;
-
-                    border-radius: 50%;
-
-                    background:
-                        linear-gradient(
-                            125deg,
-                            transparent 35%,
-                            rgba(255,255,255,.16),
-                            transparent 65%
-                        );
-
-                    transform: translateX(-130%);
-
-                    animation:
-                        eg-shine 6s ease-in-out infinite;
-
-                    pointer-events: none;
-                    z-index: 3;
+                .eg-photo-frame {
+                    width: 105px;
+                    height: 105px;
                 }
 
                 .eg-person-name {
-                    color: var(--eg-text);
-
-                    font-family:
-                        "Playfair Display",
-                        Georgia,
-                        serif;
-
-                    font-size:
-                        clamp(18px, 5vw, 25px);
-
-                    line-height: 1.15;
-
-                    word-break: break-word;
-                }
-
-                .eg-person-role {
-                    margin-top: 6px;
-
-                    color: var(--eg-primary);
-
-                    font-size: 8px;
-                    font-weight: 700;
-
-                    letter-spacing: .22em;
-                    text-transform: uppercase;
-                }
-
-                .eg-and {
-                    flex: 0 0 auto;
-
-                    display: grid;
-                    place-items: center;
-
-                    width: 38px;
-                    height: 38px;
-
-                    margin-top: -25px;
-
-                    color: var(--eg-primary);
-
-                    font-family:
-                        "Playfair Display",
-                        Georgia,
-                        serif;
-
-                    font-size: 21px;
-
-                    border:
-                        1px solid var(--eg-line);
-
-                    border-radius: 50%;
-
-                    background: var(--eg-bg);
-                }
-
-                .eg-message-card {
-                    position: relative;
-
-                    margin: 12px 0 24px;
-
-                    padding: 30px 22px;
-
-                    text-align: center;
-
-                    border-top:
-                        1px solid var(--eg-line);
-
-                    border-bottom:
-                        1px solid var(--eg-line);
-                }
-
-                .eg-message-card::before,
-                .eg-message-card::after {
-                    content: "✦";
-
-                    position: absolute;
-
-                    top: -8px;
-
-                    color: var(--eg-primary);
-
-                    font-size: 13px;
-
-                    background: var(--eg-bg);
-
-                    padding: 0 8px;
-                }
-
-                .eg-message-card::before {
-                    left: 12%;
-                }
-
-                .eg-message-card::after {
-                    right: 12%;
-                }
-
-                .eg-message {
-                    margin: 0;
-
-                    color: var(--eg-soft);
-
-                    font-family:
-                        "Playfair Display",
-                        Georgia,
-                        serif;
-
-                    font-size:
-                        clamp(16px, 4.4vw, 20px);
-
-                    line-height: 1.75;
-                }
-
-                .eg-quote {
-                    position: relative;
-
-                    margin: 24px 0;
-
-                    padding: 34px 22px 30px;
-
-                    text-align: center;
-
-                    border:
-                        1px solid var(--eg-line);
-
-                    border-radius: 2px;
-
-                    background:
-                        rgba(255,255,255,.025);
-                }
-
-                .eg-quote-mark {
-                    position: absolute;
-
-                    top: -17px;
-                    left: 50%;
-
-                    transform:
-                        translateX(-50%);
-
-                    display: grid;
-                    place-items: center;
-
-                    width: 34px;
-                    height: 34px;
-
-                    border:
-                        1px solid var(--eg-primary);
-
-                    border-radius: 50%;
-
-                    background: var(--eg-bg);
-
-                    color: var(--eg-primary);
-
-                    font-family: Georgia, serif;
-                    font-size: 24px;
-                }
-
-                .eg-arabic {
-                    margin: 0;
-
-                    direction: rtl;
-
-                    font-family:
-                        "Amiri",
-                        "Noto Naskh Arabic",
-                        serif;
-
-                    font-size:
-                        clamp(21px, 6vw, 29px);
-
-                    line-height: 2;
-
-                    color: var(--eg-text);
-                }
-
-                .eg-translation {
-                    margin:
-                        18px auto 0;
-
-                    max-width: 500px;
-
-                    color: var(--eg-soft);
-
-                    font-family:
-                        "Playfair Display",
-                        Georgia,
-                        serif;
-
-                    font-size: 14px;
-                    line-height: 1.8;
-
-                    font-style: italic;
+                    font-size: 17px;
                 }
 
                 .eg-event {
-                    position: relative;
-
-                    margin: 34px 0 22px;
-
-                    padding: 28px 18px;
-
-                    text-align: center;
-
-                    border-radius: 4px;
-
-                    background:
-                        linear-gradient(
-                            rgba(255,255,255,.025),
-                            rgba(255,255,255,.025)
-                        ),
-                        repeating-linear-gradient(
-                            45deg,
-                            transparent 0,
-                            transparent 9px,
-                            rgba(201,168,91,.025) 10px
-                        );
-                }
-
-                .eg-event-title {
-                    margin: 0 0 23px;
-
-                    color: var(--eg-primary);
-
-                    font-size: 9px;
-                    font-weight: 800;
-
-                    letter-spacing: .28em;
-                    text-transform: uppercase;
-                }
-
-                .eg-event-grid {
-                    display: grid;
-                    grid-template-columns:
-                        repeat(3, 1fr);
-
-                    border-top:
-                        1px solid var(--eg-line);
-
-                    border-bottom:
-                        1px solid var(--eg-line);
-                }
-
-                .eg-event-item {
-                    min-width: 0;
-                    padding: 17px 8px;
-                }
-
-                .eg-event-item + .eg-event-item {
-                    border-left:
-                        1px solid var(--eg-line);
-                }
-
-                .eg-event-icon {
-                    color: var(--eg-primary);
-
-                    font-size: 14px;
-
-                    margin-bottom: 9px;
-                }
-
-                .eg-event-label {
-                    display: block;
-
-                    margin-bottom: 5px;
-
-                    color: var(--eg-soft);
-
-                    font-size: 7px;
-                    font-weight: 700;
-
-                    letter-spacing: .16em;
-                    text-transform: uppercase;
+                    padding-left: 10px;
+                    padding-right: 10px;
                 }
 
                 .eg-event-value {
-                    display: block;
-
-                    color: var(--eg-text);
-
-                    font-family:
-                        "Playfair Display",
-                        Georgia,
-                        serif;
-
-                    font-size: 13px;
-                    line-height: 1.35;
-
-                    overflow-wrap: anywhere;
-                }
-
-                .eg-venue {
-                    margin-top: 23px;
-                    padding: 0 8px;
-                }
-
-                .eg-venue-name {
-                    margin: 0;
-
-                    color: var(--eg-text);
-
-                    font-family:
-                        "Playfair Display",
-                        Georgia,
-                        serif;
-
-                    font-size:
-                        clamp(20px, 6vw, 28px);
-
-                    line-height: 1.25;
-                }
-
-                .eg-address {
-                    margin: 7px auto 0;
-
-                    max-width: 480px;
-
-                    color: var(--eg-soft);
-
                     font-size: 12px;
-                    line-height: 1.6;
+                }
+            }
+
+            @media (min-width: 600px) {
+                .eg-page {
+                    padding-top: 40px;
                 }
 
-                .eg-location {
-                    margin-top: 22px;
-                    text-align: center;
+                .eg-hero {
+                    padding-top: 70px;
+                    padding-bottom: 65px;
                 }
 
-                .location-button {
-                    display: inline-flex;
-
-                    align-items: center;
-                    justify-content: center;
-
-                    gap: 10px;
-
-                    min-height: 48px;
-                    max-width: 100%;
-
-                    padding: 12px 17px;
-
-                    border:
-                        1px solid var(--eg-primary);
-
-                    border-radius: 999px;
-
-                    color: var(--eg-text);
-
-                    background:
-                        rgba(201,168,91,.08);
-
-                    text-decoration: none;
-
-                    font-size: 11px;
-                    font-weight: 700;
-
-                    letter-spacing: .08em;
-                    text-transform: uppercase;
-
-                    transition:
-                        background .25s ease,
-                        transform .25s ease;
+                .eg-couple {
+                    gap: 18px;
+                    padding-left: 25px;
+                    padding-right: 25px;
                 }
 
-                .location-button:active {
-                    transform: scale(.97);
+                .eg-message-section {
+                    padding-left: 55px;
+                    padding-right: 55px;
                 }
 
-                .location-icon {
-                    display: grid;
-                    place-items: center;
-
-                    width: 24px;
-                    height: 24px;
-
-                    border-radius: 50%;
-
-                    color: var(--eg-bg);
-                    background: var(--eg-primary);
+                .eg-quote {
+                    padding-left: 50px;
+                    padding-right: 50px;
                 }
 
-                .external-icon {
-                    font-size: 9px;
-                    opacity: .7;
+                .eg-event {
+                    padding-left: 35px;
+                    padding-right: 35px;
                 }
+            }
 
-                .eg-footer {
-                    padding: 34px 10px 8px;
-                    text-align: center;
+            @media (prefers-reduced-motion: reduce) {
+                .eg-flower,
+                .eg-photo-glow {
+                    animation: none;
                 }
+            }
+        </style>
 
-                .eg-footer-symbol {
-                    color: var(--eg-primary);
+        <main class="eg-template">
 
-                    font-size: 18px;
+            <div
+                class="eg-corner top-left"
+                aria-hidden="true"
+            ></div>
 
-                    letter-spacing: .3em;
-                }
+            <div
+                class="eg-corner top-right"
+                aria-hidden="true"
+            ></div>
 
-                .eg-footer-text {
-                    margin: 10px 0 0;
+            <div
+                class="eg-corner bottom-left"
+                aria-hidden="true"
+            ></div>
 
-                    color: var(--eg-soft);
+            <div
+                class="eg-corner bottom-right"
+                aria-hidden="true"
+            ></div>
 
-                    font-size: 9px;
+            <div
+                class="eg-flower left"
+                aria-hidden="true"
+            >
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <i></i>
+            </div>
 
-                    letter-spacing: .16em;
-                    text-transform: uppercase;
-                }
+            <div
+                class="eg-flower right"
+                aria-hidden="true"
+            >
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <i></i>
+            </div>
 
-                .template-editable {
-                    position: relative;
+            <div
+                class="eg-flower bottom"
+                aria-hidden="true"
+            >
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <i></i>
+            </div>
 
-                    outline:
-                        1px dashed rgba(45, 125, 255, .45);
+            <div class="eg-page">
 
-                    outline-offset: 5px;
-
-                    border-radius: 4px;
-                }
-
-                .template-edit-pen {
-                    position: absolute;
-
-                    top: 7px;
-                    right: 7px;
-
-                    z-index: 30;
-
-                    display: grid;
-                    place-items: center;
-
-                    width: 27px;
-                    height: 27px;
-
-                    border-radius: 50%;
-
-                    color: #fff;
-                    background: #1677ff;
-
-                    box-shadow:
-                        0 4px 14px rgba(22,119,255,.35);
-
-                    font-size: 11px;
-
-                    pointer-events: none;
-                }
-
-                .template-hidden {
-                    position: relative;
-
-                    display: block;
-
-                    min-height: 8px;
-
-                    outline:
-                        1px dashed rgba(45, 125, 255, .35);
-
-                    outline-offset: 4px;
-                }
-
-                .template-hidden::after {
-                    content: "Hidden";
-
-                    position: absolute;
-
-                    top: 4px;
-                    right: 4px;
-
-                    padding: 3px 6px;
-
-                    border-radius: 4px;
-
-                    color: #fff;
-                    background: #1677ff;
-
-                    font:
-                        700 8px/1
-                        system-ui, sans-serif;
-
-                    letter-spacing: .04em;
-                }
-
-                @keyframes eg-float {
-                    0%, 100% {
-                        transform:
-                            translateY(0)
-                            rotate(0deg);
-                    }
-
-                    50% {
-                        transform:
-                            translateY(-12px)
-                            rotate(5deg);
-                    }
-                }
-
-                @keyframes eg-shine {
-                    0%, 55%, 100% {
-                        transform:
-                            translateX(-130%);
-                    }
-
-                    72% {
-                        transform:
-                            translateX(130%);
-                    }
-                }
-
-                @media (max-width: 380px) {
-                    .eg-shell {
-                        padding-left: 12px;
-                        padding-right: 12px;
-                    }
-
-                    .eg-couple {
-                        gap: 8px;
-                    }
-
-                    .portrait-frame {
-                        min-width: 92px;
-                        min-height: 92px;
-                    }
-
-                    .eg-and {
-                        width: 31px;
-                        height: 31px;
-                        font-size: 17px;
-                    }
-
-                    .eg-person-name {
-                        font-size: 17px;
-                    }
-
-                    .eg-event-item {
-                        padding-left: 4px;
-                        padding-right: 4px;
-                    }
-
-                    .eg-event-value {
-                        font-size: 12px;
-                    }
-                }
-
-                @media (min-width: 600px) {
-                    .eg-shell {
-                        padding-top: 30px;
-                    }
-
-                    .eg-hero {
-                        padding-top: 50px;
-                        padding-bottom: 50px;
-                    }
-
-                    .eg-message-card {
-                        padding-left: 48px;
-                        padding-right: 48px;
-                    }
-
-                    .eg-quote {
-                        padding-left: 45px;
-                        padding-right: 45px;
-                    }
-                }
-
-                @media (prefers-reduced-motion: reduce) {
-                    .eg-flower,
-                    .portrait-shine {
-                        animation: none;
-                    }
-
-                    .location-button {
-                        transition: none;
-                    }
-                }
-            </style>
-
-            <main class="emerald-garden-template">
-
-                <div
-                    class="eg-ornament one"
-                    aria-hidden="true"
-                ></div>
-
-                <div
-                    class="eg-ornament two"
-                    aria-hidden="true"
-                ></div>
-
-                <div
-                    class="eg-flower a"
-                    aria-hidden="true"
-                >
-                    <i></i>
-                </div>
-
-                <div
-                    class="eg-flower b"
-                    aria-hidden="true"
-                >
-                    <i></i>
-                </div>
-
-                <div class="eg-shell">
-
-                    ${edit(
-                        'bismillah',
-                        `
-                        <div class="eg-top">
-                            <div
-                                class="eg-bismillah"
-                                lang="ar"
-                            >
-                                ${bismillah}
-                            </div>
-
-                            <div class="eg-mini-label">
-                                In the name of Allah
-                            </div>
-                        </div>
-                        `,
-                        'showBismillah'
-                    )}
-
-                    ${edit(
-                        'heading',
-                        `
-                        <section class="eg-hero">
-                            <h1 class="eg-heading">
-                                ${heading}
-                            </h1>
-                        </section>
-                        `,
-                        'showHeading'
-                    )}
-
-                    ${edit(
-                        'couple',
-                        `
-                        <section
-                            class="eg-couple"
-                            aria-label="Couple"
+                ${edit(
+                    'bismillah',
+                    `
+                    <header class="eg-top">
+                        <div
+                            class="eg-bismillah"
+                            lang="ar"
                         >
-                            <div class="eg-person">
+                            ${bismillah}
+                        </div>
 
-                                ${couplePhoto(
-                                    groomPhoto,
-                                    groom,
-                                    'groom'
-                                )}
+                        <div class="eg-top-caption">
+                            In the Name of Allah
+                        </div>
 
-                                <div class="eg-person-name">
-                                    ${groom}
-                                </div>
+                        <div
+                            class="eg-divider"
+                            aria-hidden="true"
+                        >
+                            <span class="eg-divider-dot"></span>
+                        </div>
+                    </header>
+                    `,
+                    'showBismillah'
+                )}
 
-                                <div class="eg-person-role">
-                                    Groom
-                                </div>
+                ${edit(
+                    'heading',
+                    `
+                    <section class="eg-hero">
 
-                            </div>
+                        <div class="eg-hero-small">
+                            A Beautiful Beginning
+                        </div>
 
-                            <div
-                                class="eg-and"
-                                aria-hidden="true"
-                            >
-                                &amp;
-                            </div>
+                        <h1 class="eg-heading">
+                            ${heading}
+                        </h1>
 
-                            <div class="eg-person">
+                        <div class="eg-heading-line"></div>
 
-                                ${couplePhoto(
-                                    bridePhoto,
-                                    bride,
-                                    'bride'
-                                )}
+                    </section>
+                    `,
+                    'showHeading'
+                )}
 
-                                <div class="eg-person-name">
-                                    ${bride}
-                                </div>
-
-                                <div class="eg-person-role">
-                                    Bride
-                                </div>
-
-                            </div>
-                        </section>
-                        `,
-                        'showCouple'
-                    )}
-
-                    ${edit(
-                        'message',
-                        `
-                        <section class="eg-message-card">
-                            <p class="eg-message">
-                                ${message}
-                            </p>
-                        </section>
-                        `,
-                        'showMessage'
-                    )}
-
-                    ${edit(
-                        'quran',
-                        `
-                        <section class="eg-quote">
-
-                            <span
-                                class="eg-quote-mark"
-                                aria-hidden="true"
-                            >
-                                “
-                            </span>
-
-                            <p
-                                class="eg-arabic"
-                                lang="ar"
-                            >
-                                ${arabicText}
-                            </p>
-
-                            <p class="eg-translation">
-                                ${translation}
-                            </p>
-
-                        </section>
-                        `,
-                        'showQuote'
-                    )}
-
-                    ${edit(
-                        'mainEvent',
-                        `
-                        <section class="eg-event">
-
-                            <h2 class="eg-event-title">
-                                ${eventTitle}
-                            </h2>
-
-                            <div class="eg-event-grid">
-
-                                <div class="eg-event-item">
-
-                                    <div class="eg-event-icon">
-                                        <i class="fa-regular fa-calendar"></i>
-                                    </div>
-
-                                    <span class="eg-event-label">
-                                        Date
-                                    </span>
-
-                                    <span class="eg-event-value">
-                                        ${eventDate}
-                                    </span>
-
-                                </div>
-
-                                <div class="eg-event-item">
-
-                                    <div class="eg-event-icon">
-                                        <i class="fa-regular fa-clock"></i>
-                                    </div>
-
-                                    <span class="eg-event-label">
-                                        Time
-                                    </span>
-
-                                    <span class="eg-event-value">
-                                        ${eventTime}
-                                    </span>
-
-                                </div>
-
-                                <div class="eg-event-item">
-
-                                    <div class="eg-event-icon">
-                                        <i class="fa-solid fa-location-dot"></i>
-                                    </div>
-
-                                    <span class="eg-event-label">
-                                        Venue
-                                    </span>
-
-                                    <span class="eg-event-value">
-                                        ${venue}
-                                    </span>
-
-                                </div>
-
-                            </div>
-
-                            <div class="eg-venue">
-
-                                <h3 class="eg-venue-name">
-                                    ${venue}
-                                </h3>
-
-                                <p class="eg-address">
-                                    ${address}
-                                </p>
-
-                            </div>
-
-                            ${
-                                settings.showMap === false
-                                    ? ''
-                                    : `
-                                    <div class="eg-location">
-                                        ${mapAction}
-                                    </div>
-                                    `
-                            }
-
-                        </section>
-                        `,
-                        'showEvent'
-                    )}
-
-                    ${settings.showEvent === false && settings.showMap !== false
-                        ? edit(
-                            'mainEvent',
-                            `
-                            <div class="eg-location">
-                                ${mapAction}
-                            </div>
-                            `,
-                            'showMap'
-                        )
-                        : ''
-                    }
-
-                    <footer
-                        class="eg-footer"
-                        aria-hidden="true"
+                ${edit(
+                    'couple',
+                    `
+                    <section
+                        class="eg-couple"
+                        aria-label="Bride and Groom"
                     >
-                        <div class="eg-footer-symbol">
-                            ✦ · ✦ · ✦
+
+                        <div class="eg-person">
+
+                            ${getPhoto(
+                                groomPhoto,
+                                groom,
+                                'groom'
+                            )}
+
+                            <div class="eg-person-name">
+                                ${groom}
+                            </div>
+
+                            <div class="eg-person-role">
+                                Groom
+                            </div>
+
                         </div>
 
-                        <div class="eg-footer-text">
-                            With love and blessings
+                        <div
+                            class="eg-amp"
+                            aria-hidden="true"
+                        >
+                            &amp;
                         </div>
-                    </footer>
 
-                </div>
-            </main>
-        `;
-    }
+                        <div class="eg-person">
+
+                            ${getPhoto(
+                                bridePhoto,
+                                bride,
+                                'bride'
+                            )}
+
+                            <div class="eg-person-name">
+                                ${bride}
+                            </div>
+
+                            <div class="eg-person-role">
+                                Bride
+                            </div>
+
+                        </div>
+
+                    </section>
+                    `,
+                    'showCouple'
+                )}
+
+                ${edit(
+                    'message',
+                    `
+                    <section class="eg-message-section">
+                        <p class="eg-message">
+                            ${message}
+                        </p>
+                    </section>
+                    `,
+                    'showMessage'
+                )}
+
+                ${edit(
+                    'quran',
+                    `
+                    <section class="eg-quote">
+
+                        <div
+                            class="eg-quote-symbol"
+                            aria-hidden="true"
+                        >
+                            “
+                        </div>
+
+                        <p
+                            class="eg-arabic"
+                            lang="ar"
+                        >
+                            ${arabicText}
+                        </p>
+
+                        <p class="eg-translation">
+                            ${translation}
+                        </p>
+
+                    </section>
+                    `,
+                    'showQuote'
+                )}
+
+                ${edit(
+                    'mainEvent',
+                    `
+                    <section class="eg-event">
+
+                        <div class="eg-event-kicker">
+                            You Are Invited
+                        </div>
+
+                        <h2 class="eg-event-title">
+                            ${eventTitle}
+                        </h2>
+
+                        <div class="eg-event-grid">
+
+                            <div class="eg-event-item">
+                                <div class="eg-event-icon">
+                                    <i class="fa-regular fa-calendar"></i>
+                                </div>
+
+                                <span class="eg-event-label">
+                                    Date
+                                </span>
+
+                                <span class="eg-event-value">
+                                    ${formattedDate}
+                                </span>
+                            </div>
+
+                            <div class="eg-event-item">
+                                <div class="eg-event-icon">
+                                    <i class="fa-regular fa-clock"></i>
+                                </div>
+
+                                <span class="eg-event-label">
+                                    Time
+                                </span>
+
+                                <span class="eg-event-value">
+                                    ${eventTime}
+                                </span>
+                            </div>
+
+                            <div class="eg-event-item">
+                                <div class="eg-event-icon">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                </div>
+
+                                <span class="eg-event-label">
+                                    Venue
+                                </span>
+
+                                <span class="eg-event-value">
+                                    ${venue}
+                                </span>
+                            </div>
+
+                            <div class="eg-event-item">
+                                <div class="eg-event-icon">
+                                    <i class="fa-solid fa-map"></i>
+                                </div>
+
+                                <span class="eg-event-label">
+                                    Address
+                                </span>
+
+                                <span class="eg-event-value">
+                                    ${address}
+                                </span>
+                            </div>
+
+                        </div>
+
+                        <div class="eg-venue">
+
+                            <h3 class="eg-venue-name">
+                                ${venue}
+                            </h3>
+
+                            <p class="eg-address">
+                                ${address}
+                            </p>
+
+                        </div>
+
+                        ${
+                            set.showMap !== false && safeMapUrl
+                                ? `
+                                <div class="eg-map">
+                                    ${mapButton}
+                                </div>
+                                `
+                                : ''
+                        }
+
+                    </section>
+                    `,
+                    'showEvent'
+                )}
+
+                <footer class="eg-closing">
+
+                    <div class="eg-closing-symbol">
+                        ✦ · ✦ · ✦
+                    </div>
+
+                    <div class="eg-closing-text">
+                        With Love and Blessings
+                    </div>
+
+                </footer>
+
+            </div>
+        </main>
+    `;
+}
+
 });
