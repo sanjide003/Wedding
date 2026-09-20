@@ -63,6 +63,7 @@
         .hidden-block .edit-badge { background: #EF4444; }
         
         .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+        #editor-workspace { -webkit-overflow-scrolling: touch; touch-action: pan-y; }
     </style>
 </head>
 <body class="antialiased h-[100dvh] w-screen overflow-hidden flex flex-col bg-gray-50">
@@ -263,7 +264,7 @@
                     <input type="text" id="ed-me-title" placeholder="e.g. Nikah Ceremony" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
                     <div class="grid grid-cols-2 gap-3">
                         <div><label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Date</label>
-                        <input type="text" id="ed-me-date" placeholder="e.g. 20 Sept 2026" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
+                        <input type="date" id="ed-me-date" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" onchange="handleEditorInput()"></div>
                         <div><label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Time</label>
                         <input type="text" id="ed-me-time" placeholder="e.g. 11:00 AM" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none" oninput="handleEditorInput()"></div>
                     </div>
@@ -742,6 +743,9 @@
         function updateEditorPreview() {
             const container = document.getElementById('renderer-output-editor');
             const t = state.templates[state.data.templateId] || state.templates['blank-canvas'];
+            const canvas = document.getElementById('visual-editor-canvas');
+            // A long template owns its layout height. Let the editor workspace scroll it on mobile.
+            canvas.style.overflow = t.scrollable ? 'visible' : 'hidden';
             container.innerHTML = t.render(state.data, true);
             attachEditListeners();
             if(t.freeform) initDragDrop();
