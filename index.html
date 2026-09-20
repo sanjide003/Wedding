@@ -55,6 +55,7 @@
         
         .edit-badge { position: absolute; top: -12px; right: -12px; background: #3B82F6; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0.9; z-index: 50; box-shadow: 0 4px 6px rgba(0,0,0,0.2);}
         .drag-handle { position: absolute; top: -12px; left: -12px; background: #10B981; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0.9; z-index: 51; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: move; touch-action: none;}
+        .resize-handle { position: absolute; right: -12px; bottom: -12px; background: #8B5CF6; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; opacity: 0.9; z-index: 51; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: nwse-resize; touch-action: none;}
         
         .editable-block:hover .edit-badge, .editable-block:hover .drag-handle { opacity: 1; transform: scale(1.05); }
         .hidden-block { opacity: 0.3 !important; filter: grayscale(100%); }
@@ -470,6 +471,7 @@
                     if(isHidden && !isEditMode) return '';
                     
                     let style = '';
+                    const width = d.design?.sizes?.[key]?.width;
                     if(d.design?.positions?.[key]) {
                         const pos = d.design.positions[key];
                         style = `position:absolute; left:${pos.x}%; top:${pos.y}%;`;
@@ -479,11 +481,13 @@
                         style = `position:absolute; left:50%; top:${defaultPos[key] || 50}%;`;
                     }
                     
-                    if(!isEditMode) return `<div class="absolute-pos w-full text-center flex flex-col items-center justify-center" style="${style} transform:translate(-50%,-50%);">${content}</div>`;
+                    const sizeStyle = width ? `width:${width}%;` : 'width:80%;';
+                    if(!isEditMode) return `<div class="absolute-pos text-center flex flex-col items-center justify-center" style="${style} ${sizeStyle} transform:translate(-50%,-50%);">${content}</div>`;
                     
-                    return `<div class="editable-block absolute-pos w-max min-w-[200px] text-center flex flex-col items-center justify-center ${isHidden ? 'hidden-block' : ''}" data-edit="${key}" style="${style}">
+                    return `<div class="editable-block absolute-pos min-w-[120px] text-center flex flex-col items-center justify-center ${isHidden ? 'hidden-block' : ''}" data-edit="${key}" style="${style} ${sizeStyle}">
                                 <div class="drag-handle"><i class="fa-solid fa-arrows-up-down-left-right"></i></div>
                                 <div class="edit-badge"><i class="fa-solid fa-pen"></i></div>
+                                <div class="resize-handle"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></div>
                                 ${content}
                             </div>`;
                 };
@@ -744,10 +748,10 @@
         }
 
         function attachEditListeners() {
-            const blocks = document.querySelectorAll('.editable-block');
+            const blocks = document.querySelectorAll('[data-edit]');
             blocks.forEach(block => {
                 block.onclick = (e) => {
-                    if(e.target.closest('.drag-handle')) return; 
+                    if(e.target.closest('.drag-handle, .resize-handle')) return;
                     e.stopPropagation();
                     const editKey = block.getAttribute('data-edit');
                     
@@ -762,21 +766,29 @@
         }
 
         // --- Drag and Drop Logic ---
-        let isDragging = false, dragTarget = null, dragStartX, dragStartY, initialX, initialY;
+        let isDragging = false, isResizing = false, dragTarget = null, dragStartX, dragStartY, initialX, initialY, initialWidth;
 
         function initDragDrop() {
             const workspace = document.getElementById('visual-editor-canvas');
             workspace.removeEventListener('mousedown', startDrag);
             workspace.removeEventListener('touchstart', startDrag);
+            workspace.removeEventListener('mousedown', startResize);
+            workspace.removeEventListener('touchstart', startResize);
             document.removeEventListener('mousemove', drag);
             document.removeEventListener('touchmove', drag);
+            document.removeEventListener('mousemove', resize);
+            document.removeEventListener('touchmove', resize);
             document.removeEventListener('mouseup', endDrag);
             document.removeEventListener('touchend', endDrag);
 
             workspace.addEventListener('mousedown', startDrag, {passive: false});
             workspace.addEventListener('touchstart', startDrag, {passive: false});
+            workspace.addEventListener('mousedown', startResize, {passive: false});
+            workspace.addEventListener('touchstart', startResize, {passive: false});
             document.addEventListener('mousemove', drag, {passive: false});
             document.addEventListener('touchmove', drag, {passive: false});
+            document.addEventListener('mousemove', resize, {passive: false});
+            document.addEventListener('touchmove', resize, {passive: false});
             document.addEventListener('mouseup', endDrag);
             document.addEventListener('touchend', endDrag);
         }
@@ -812,18 +824,47 @@
             const parentRect = dragTarget.parentElement.getBoundingClientRect();
             const dxPercent = (dx / parentRect.width) * 100; const dyPercent = (dy / parentRect.height) * 100;
 
-            dragTarget.style.left = `${initialX + dxPercent}%`;
-            dragTarget.style.top = `${initialY + dyPercent}%`;
+            dragTarget.style.left = `${Math.max(0, Math.min(100, initialX + dxPercent))}%`;
+            dragTarget.style.top = `${Math.max(0, Math.min(100, initialY + dyPercent))}%`;
+        }
+
+        function startResize(e) {
+            if(!e.target.closest('.resize-handle')) return;
+            isResizing = true;
+            dragTarget = e.target.closest('.editable-block');
+            e.preventDefault();
+            const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const parentRect = dragTarget.parentElement.getBoundingClientRect();
+            initialWidth = (dragTarget.getBoundingClientRect().width / parentRect.width) * 100;
+            dragStartX = clientX;
+            dragTarget.style.zIndex = 100;
+            dragTarget.style.transition = 'none';
+        }
+
+        function resize(e) {
+            if(!isResizing || !dragTarget) return;
+            e.preventDefault();
+            const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const parentRect = dragTarget.parentElement.getBoundingClientRect();
+            const width = Math.max(20, Math.min(100, initialWidth + ((clientX - dragStartX) / parentRect.width) * 100));
+            dragTarget.style.width = `${width}%`;
         }
 
         function endDrag(e) {
-            if(!isDragging || !dragTarget) return;
+            if((!isDragging && !isResizing) || !dragTarget) return;
+            const wasResizing = isResizing;
             isDragging = false;
+            isResizing = false;
             dragTarget.style.zIndex = ''; dragTarget.style.transition = '';
 
             const key = dragTarget.getAttribute('data-edit');
             if(!state.data.design.positions) state.data.design.positions = {};
-            state.data.design.positions[key] = { x: parseFloat(dragTarget.style.left), y: parseFloat(dragTarget.style.top) };
+            if(wasResizing) {
+                if(!state.data.design.sizes) state.data.design.sizes = {};
+                state.data.design.sizes[key] = { width: parseFloat(dragTarget.style.width) };
+            } else {
+                state.data.design.positions[key] = { x: parseFloat(dragTarget.style.left), y: parseFloat(dragTarget.style.top) };
+            }
 
             dragTarget = null;
             clearTimeout(state.saveTimeout);

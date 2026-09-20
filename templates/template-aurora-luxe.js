@@ -117,12 +117,12 @@ window.registerTemplate({
             <div class="al-label">A beginning, beautifully written</div>
         </div>
 
-        ${editWrap('content', `<div class="al-bismillah">بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ</div>`, 'showBismillah')}
+        ${editWrap('bismillah', `<div class="al-bismillah">${safe(content.bismillah, 'بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ')}</div>`, 'showBismillah')}
 
         <div class="al-hero">
-            ${editWrap('content', `<div class="al-heading">${heading}</div>`, 'showHeading')}
+            ${editWrap('heading', `<div class="al-heading">${heading}</div>`, 'showHeading')}
             ${editWrap('couple', `<div class="al-names"><span class="al-name">${groom}</span><span class="al-amp">&amp;</span><span class="al-name">${bride}</span></div>`, 'showCouple')}
-            ${editWrap('content', `<div><div class="al-rule"></div><p class="al-message">${message.replace(/\n/g,'<br>')}</p></div>`, 'showMessage')}
+            ${editWrap('message', `<div><div class="al-rule"></div><p class="al-message">${message.replace(/\n/g,'<br>')}</p></div>`, 'showMessage')}
         </div>
 
         ${editWrap('couple', `<div class="al-portraits"><img class="al-photo" src="${groomPhoto}" alt="Groom"><div class="al-photo-mid">&amp;</div><img class="al-photo" src="${bridePhoto}" alt="Bride"></div>`, 'showCouple')}
