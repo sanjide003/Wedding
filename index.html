@@ -64,11 +64,11 @@
         .tab-btn i { font-size: 18px; }
         
         /* Mobile Preview Modal Animation */
-        #mobile-preview-modal { transition: transform 0.3s ease-in-out; }
-        .preview-open { transform: translateY(0) !important; }
+        #mobile-preview-modal { transition: all 0.3s ease-in-out; }
+        .preview-open { transform: translateY(0) !important; opacity: 1 !important; pointer-events: auto !important; }
     </style>
 </head>
-<body class="antialiased h-screen w-screen overflow-hidden flex flex-col bg-gray-50">
+<body class="antialiased h-[100dvh] w-screen overflow-hidden flex flex-col bg-gray-50">
 
     <!-- Global Loader Overlay -->
     <div id="global-loader" class="fixed inset-0 bg-white/90 z-[100] flex flex-col items-center justify-center hidden backdrop-blur-sm transition-opacity">
@@ -80,17 +80,17 @@
     <div id="toast-container"></div>
 
     <!-- 1. LOGIN VIEW -->
-    <div id="view-login" class="view-section h-full w-full bg-[url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center relative">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-        <div class="relative z-10 h-full flex flex-col items-center justify-center px-4">
-            <div class="max-w-md w-full bg-white/95 backdrop-blur p-10 rounded-3xl shadow-2xl text-center border border-white/20">
+    <div id="view-login" class="view-section absolute inset-0 z-50 bg-[url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-6">
+            <div class="max-w-md w-full bg-white/95 backdrop-blur-md p-8 sm:p-10 rounded-[2rem] shadow-2xl text-center border border-white/20 transform transition-all">
                 <div class="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                     <i class="fa-solid fa-rings-wedding text-4xl text-brand-500"></i>
                 </div>
-                <h1 class="text-4xl font-serif font-bold text-gray-900 mb-2">Wedding Studio</h1>
+                <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-2">Wedding Studio</h1>
                 <p class="text-gray-500 mb-10 text-sm">Create your perfect digital invitation</p>
                 
-                <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-800 py-3.5 px-4 rounded-xl hover:bg-gray-50 hover:shadow-md transition font-medium">
+                <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-800 py-3.5 px-4 rounded-xl hover:bg-gray-50 hover:shadow-md transition-all font-medium active:scale-[0.98]">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
                     Continue with Google
                 </button>
@@ -418,7 +418,7 @@
 
             <!-- Live Preview Panel -->
             <!-- Mobile Preview Modal (Slide up) -->
-            <div id="mobile-preview-modal" class="fixed inset-0 bg-gray-900/95 z-50 transform translate-y-full lg:translate-y-0 lg:relative lg:flex-grow lg:bg-gray-200/60 flex flex-col items-center justify-center p-4 overflow-hidden">
+            <div id="mobile-preview-modal" class="fixed inset-0 bg-gray-900/95 z-[60] transform translate-y-full opacity-0 pointer-events-none lg:translate-y-0 lg:opacity-100 lg:pointer-events-auto lg:relative lg:flex-grow lg:bg-gray-200/60 flex flex-col items-center justify-center p-4 overflow-hidden transition-all duration-300 ease-in-out">
                 
                 <!-- Close button for Mobile Modal -->
                 <button onclick="toggleMobilePreview()" class="lg:hidden absolute top-6 right-6 w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur rounded-full text-white flex items-center justify-center z-20 transition">
@@ -478,9 +478,9 @@
     </div>
 
     <script type="module">
-        // Import Firebase v10 Modular SDKs (Only Auth & Firestore needed now)
+        // Import Firebase v10 Modular SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         
         // Firebase Config (User Provided)
@@ -644,7 +644,10 @@
 
             if (hash === '#/') {
                 if (currentUser) window.location.hash = '#dashboard';
-                else document.getElementById('view-login').classList.add('active');
+                else {
+                    document.getElementById('view-login').style.display = 'block';
+                    document.getElementById('view-login').classList.add('active');
+                }
             } 
             else if (hash === '#dashboard') {
                 if (!currentUser) window.location.hash = '#/';
@@ -676,6 +679,18 @@
            AUTH LOGIC
            ========================================== */
         if(auth) {
+            // Handle redirect result specifically for mobile browsers
+            getRedirectResult(auth).then((result) => {
+                if(result) {
+                    hideLoader();
+                    showToast("Login successful!", "success");
+                }
+            }).catch((error) => {
+                hideLoader();
+                console.error("Auth Error:", error);
+                showToast("Login error. Please try again.", "error");
+            });
+
             onAuthStateChanged(auth, (user) => {
                 currentUser = user;
                 if (user) {
@@ -691,15 +706,10 @@
             });
         }
 
-        document.getElementById('btn-google-login')?.addEventListener('click', async () => {
-            try {
-                showLoader("Signing in...");
-                const provider = new GoogleAuthProvider();
-                await signInWithPopup(auth, provider);
-            } catch(e) {
-                showToast("Login failed. Check console.", "error");
-                console.error(e);
-            } finally { hideLoader(); }
+        document.getElementById('btn-google-login')?.addEventListener('click', () => {
+            showLoader("Signing in securely...");
+            const provider = new GoogleAuthProvider();
+            signInWithRedirect(auth, provider);
         });
 
         document.getElementById('btn-logout')?.addEventListener('click', () => {
@@ -778,15 +788,8 @@
         window.createNewInvitation = async function() {
             showLoader("Preparing workspace...");
             try {
-                let code = '';
-                let isUnique = false;
-                
-                // Collision avoidance
-                while(!isUnique) {
-                    code = generateSecureCode();
-                    const docSnap = await getDoc(doc(db, "invitations", code));
-                    if (!docSnap.exists()) isUnique = true;
-                }
+                // Generate a secure 5-character code
+                const code = generateSecureCode();
 
                 const initData = {
                     ownerUid: currentUser.uid,
