@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Wedding Studio</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,8 +37,9 @@
         .font-serif { font-family: 'Playfair Display', serif; }
         .font-arabic { font-family: 'Amiri', serif; }
         
+        /* View Sections - Force Hidden by Default */
         .view-section { display: none; opacity: 0; transition: opacity 0.3s ease; }
-        .view-section.active { display: block; opacity: 1; }
+        .view-section.active { opacity: 1; }
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -51,47 +52,44 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* Toast */
-        #toast-container { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: #1F2937; color: white; padding: 10px 20px; border-radius: 8px; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); animation: slideUp 0.3s ease forwards; }
+        #toast-container { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-w: 400px; align-items: center; }
+        .toast { background: #1F2937; color: white; padding: 12px 24px; border-radius: 50px; font-size: 14px; font-weight: 500; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); animation: slideUp 0.3s ease forwards; text-align: center; width: auto; }
         @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         /* Template Specific Base Styles */
         .template-card { position: relative; width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; background-size: cover; background-position: center; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .tab-btn { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 10px 0; color: #6b7280; font-size: 11px; font-weight: 500; transition: all 0.2s; }
+        .tab-btn { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 0; color: #9ca3af; font-size: 11px; font-weight: 500; transition: all 0.2s; }
         .tab-btn.active { color: #B38A4A; }
-        .tab-btn i { font-size: 18px; }
-        
-        /* Mobile Preview Modal Animation */
-        #mobile-preview-modal { transition: all 0.3s ease-in-out; }
-        .preview-open { transform: translateY(0) !important; opacity: 1 !important; pointer-events: auto !important; }
+        .tab-btn i { font-size: 20px; margin-bottom: 2px; }
     </style>
 </head>
 <body class="antialiased h-[100dvh] w-screen overflow-hidden flex flex-col bg-gray-50">
 
     <!-- Global Loader Overlay -->
-    <div id="global-loader" class="fixed inset-0 bg-white/90 z-[100] flex flex-col items-center justify-center hidden backdrop-blur-sm transition-opacity">
-        <div class="loader w-12 h-12 border-4 mb-4"></div>
-        <p class="text-gray-600 font-medium tracking-wide" id="loader-text">Please wait...</p>
+    <div id="global-loader" class="fixed inset-0 bg-white/95 z-[9999] flex flex-col items-center justify-center hidden backdrop-blur-md transition-opacity">
+        <div class="loader w-14 h-14 border-4 mb-4"></div>
+        <p class="text-gray-800 font-medium tracking-wide text-lg" id="loader-text">Loading...</p>
     </div>
 
     <!-- Toast Container -->
     <div id="toast-container"></div>
 
     <!-- 1. LOGIN VIEW -->
-    <div id="view-login" class="view-section absolute inset-0 z-50 bg-[url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-        <div class="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-6">
-            <div class="max-w-md w-full bg-white/95 backdrop-blur-md p-8 sm:p-10 rounded-[2rem] shadow-2xl text-center border border-white/20 transform transition-all">
+    <!-- Fixed: Made absolute inset-0 and flex for perfect centering -->
+    <div id="view-login" class="view-section absolute inset-0 z-50 bg-[url('https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center flex-col items-center justify-center">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="relative z-10 max-w-md w-full px-6">
+            <div class="bg-white/95 backdrop-blur-md p-8 sm:p-10 rounded-3xl shadow-2xl text-center border border-white/20">
                 <div class="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                     <i class="fa-solid fa-rings-wedding text-4xl text-brand-500"></i>
                 </div>
                 <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-900 mb-2">Wedding Studio</h1>
                 <p class="text-gray-500 mb-10 text-sm">Create your perfect digital invitation</p>
                 
-                <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-800 py-3.5 px-4 rounded-xl hover:bg-gray-50 hover:shadow-md transition-all font-medium active:scale-[0.98]">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-800 py-4 px-4 rounded-xl hover:bg-gray-50 hover:shadow-md transition-all font-semibold active:scale-[0.98] text-base">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6" alt="Google">
                     Continue with Google
                 </button>
                 <p class="mt-6 text-xs text-gray-400">Your invitations, your private workspace.</p>
@@ -100,7 +98,7 @@
     </div>
 
     <!-- 2. DASHBOARD VIEW -->
-    <div id="view-dashboard" class="view-section h-full w-full bg-[#F8F7F4] flex flex-col overflow-y-auto">
+    <div id="view-dashboard" class="view-section h-full w-full bg-[#F8F7F4] flex-col overflow-y-auto">
         <nav class="bg-white sticky top-0 z-40 border-b border-gray-200 shadow-sm">
             <div class="max-w-6xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
                 <div class="font-serif font-bold text-xl text-brand-900 flex items-center gap-2">
@@ -111,123 +109,123 @@
                         <img id="user-avatar" src="" class="w-8 h-8 rounded-full bg-gray-200 hidden" alt="Avatar">
                         <span id="user-name" class="font-medium text-sm hidden sm:block text-gray-700"></span>
                     </div>
-                    <button id="btn-logout" class="text-gray-400 hover:text-red-500 transition p-2" title="Logout">
-                        <i class="fa-solid fa-right-from-bracket"></i>
+                    <button id="btn-logout" class="text-gray-400 hover:text-red-500 transition p-2 bg-gray-50 rounded-full w-10 h-10 flex items-center justify-center" title="Logout">
+                        <i class="fa-solid fa-power-off"></i>
                     </button>
                 </div>
             </div>
         </nav>
 
-        <main class="max-w-6xl mx-auto px-4 md:px-8 py-8 w-full flex-grow">
+        <main class="max-w-6xl mx-auto px-4 md:px-8 py-8 w-full flex-grow pb-24">
             <!-- Stats Bar -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
-                <div>
-                    <h2 class="text-2xl font-serif font-bold text-gray-900" id="dash-greeting">Good evening!</h2>
-                    <p class="text-gray-500 text-sm mt-1">Manage your elegant invitations.</p>
+            <div class="bg-gradient-to-r from-brand-900 to-brand-500 rounded-3xl shadow-lg p-8 mb-10 flex flex-col md:flex-row justify-between items-center gap-6 text-white relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 opacity-10">
+                    <i class="fa-solid fa-fan text-9xl"></i>
                 </div>
-                <button onclick="createNewInvitation()" class="w-full md:w-auto bg-brand-500 hover:bg-brand-900 text-white px-6 py-3 rounded-xl shadow-md font-medium transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-plus"></i> Create Invitation
+                <div class="relative z-10 w-full md:w-auto text-center md:text-left">
+                    <h2 class="text-3xl font-serif font-bold" id="dash-greeting">Good evening!</h2>
+                    <p class="text-brand-50 text-sm mt-2 opacity-90">Manage your elegant wedding invitations.</p>
+                </div>
+                <button onclick="createNewInvitation()" class="relative z-10 w-full md:w-auto bg-white text-brand-900 px-8 py-4 rounded-xl shadow-md font-bold transition hover:bg-gray-50 hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus text-brand-500"></i> Create Invitation
                 </button>
             </div>
 
-            <div class="flex justify-between items-end mb-6">
-                <h3 class="text-lg font-bold text-gray-800">My Invitations</h3>
+            <div class="flex justify-between items-end mb-6 px-1">
+                <h3 class="text-xl font-bold text-gray-800">My Invitations</h3>
             </div>
 
-            <div id="invitations-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div id="invitations-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Cards injected here -->
             </div>
             
-            <div id="empty-state" class="hidden text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100 border-dashed">
-                <div class="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4 text-brand-500 text-2xl">
+            <div id="empty-state" class="hidden text-center py-24 bg-white rounded-3xl shadow-sm border border-gray-100 border-dashed mx-2">
+                <div class="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-6 text-brand-500 text-3xl">
                     <i class="fa-regular fa-envelope-open"></i>
                 </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-1">No invitations yet</h3>
-                <p class="text-gray-500 mb-6 text-sm">Create your first beautiful wedding invitation.</p>
-                <button onclick="createNewInvitation()" class="text-brand-500 font-medium hover:underline">Start Creating</button>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">No invitations yet</h3>
+                <p class="text-gray-500 mb-8 text-sm max-w-xs mx-auto">Start designing your first beautiful wedding invitation today.</p>
+                <button onclick="createNewInvitation()" class="text-brand-600 bg-brand-50 px-6 py-3 rounded-full font-semibold hover:bg-brand-100 transition active:scale-95">Start Creating</button>
             </div>
         </main>
     </div>
 
     <!-- 3. EDITOR VIEW -->
-    <div id="view-editor" class="view-section h-full w-full bg-gray-50 flex flex-col relative">
+    <div id="view-editor" class="view-section h-full w-full bg-gray-50 flex-col relative">
         <!-- Editor Nav (Top) -->
-        <nav class="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-4 shrink-0 shadow-sm z-20">
+        <nav class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 sm:px-6 shrink-0 shadow-sm z-20">
             <div class="flex items-center gap-4">
-                <button onclick="window.location.hash='#dashboard'" class="text-gray-500 hover:text-gray-900 text-sm font-medium"><i class="fa-solid fa-arrow-left mr-2"></i><span class="hidden sm:inline">Back</span></button>
-                <div class="h-4 w-px bg-gray-300"></div>
-                <div class="text-[10px] sm:text-xs text-gray-400 font-mono" id="editor-code-badge"></div>
+                <button onclick="window.location.hash='#dashboard'" class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition active:scale-95"><i class="fa-solid fa-arrow-left"></i></button>
+                <div class="hidden sm:block">
+                    <h2 class="font-bold text-gray-800 text-sm">Editor</h2>
+                    <div class="text-[10px] text-gray-400 font-mono" id="editor-code-badge"></div>
+                </div>
             </div>
-            <div class="flex items-center gap-2 sm:gap-3">
-                <span id="save-status" class="text-[10px] sm:text-xs text-gray-400 flex items-center transition-opacity opacity-0"><i class="fa-solid fa-check text-green-500 mr-1"></i>Saved</span>
+            <div class="flex items-center gap-3">
+                <span id="save-status" class="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full transition-opacity opacity-0"><i class="fa-solid fa-cloud-arrow-up mr-1.5"></i>Saved</span>
                 
                 <!-- Status Toggle -->
-                <div class="flex items-center gap-2 bg-gray-100 rounded-lg px-2 py-1">
-                    <span id="publish-status-text" class="text-[10px] sm:text-xs font-medium text-gray-600">Draft</span>
+                <div class="flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1.5 border border-gray-200 shadow-inner">
+                    <span id="publish-status-text" class="text-xs font-bold text-gray-600 w-16 text-center">Draft</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggle-publish" class="sr-only peer" onchange="togglePublishStatus(this)">
-                        <div class="w-7 h-4 sm:w-8 sm:h-4 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-500"></div>
+                        <div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
                     </label>
                 </div>
             </div>
         </nav>
 
-        <!-- Editor Workspace (Mobile First) -->
+        <!-- Editor Workspace -->
         <div class="flex-grow flex flex-col lg:flex-row overflow-hidden relative">
             
             <!-- Controls Panel (Scrollable Main Area) -->
-            <div class="w-full lg:w-[450px] bg-white flex flex-col h-full shrink-0 z-10 pb-[70px] lg:pb-0 overflow-y-auto">
-                <!-- Tab Contents -->
-                <div class="flex-grow p-4 sm:p-5 space-y-6">
+            <div class="w-full lg:w-[450px] bg-white flex flex-col h-full shrink-0 z-10 pb-[80px] lg:pb-0 overflow-y-auto">
+                <div class="flex-grow p-5 sm:p-6 space-y-6">
                     
                     <!-- TEMPLATE TAB -->
                     <div id="tab-template" class="tab-content active">
-                        <h3 class="text-xs font-bold text-gray-800 mb-4 uppercase tracking-wider">Choose Theme</h3>
-                        <div class="grid grid-cols-2 gap-3 sm:gap-4" id="template-list-container">
+                        <h3 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest">Select Theme</h3>
+                        <div class="grid grid-cols-2 gap-4" id="template-list-container">
                             <!-- Injected via JS -->
                         </div>
                     </div>
 
                     <!-- CONTENT TAB -->
                     <div id="tab-content" class="tab-content">
-                        <div class="space-y-5">
-                            <div>
-                                <h3 class="text-xs font-bold text-brand-500 mb-2 uppercase tracking-wider">Couple Details</h3>
-                                <div class="space-y-3">
-                                    <div><label class="block text-xs text-gray-500 mb-1">Groom's Name</label>
-                                    <input type="text" id="ed-groom" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-brand-500 outline-none transition" oninput="handleEditorInput()"></div>
-                                    <div><label class="block text-xs text-gray-500 mb-1">Bride's Name</label>
-                                    <input type="text" id="ed-bride" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:border-brand-500 outline-none transition" oninput="handleEditorInput()"></div>
+                        <div class="space-y-6">
+                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                                <h3 class="text-xs font-bold text-brand-500 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-rings-wedding"></i> Couple Details</h3>
+                                <div class="space-y-4">
+                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Groom's Name</label>
+                                    <input type="text" id="ed-groom" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition" oninput="handleEditorInput()"></div>
+                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Bride's Name</label>
+                                    <input type="text" id="ed-bride" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition" oninput="handleEditorInput()"></div>
                                 </div>
                             </div>
                             
-                            <hr class="border-gray-100">
-                            
-                            <div>
-                                <h3 class="text-xs font-bold text-brand-500 mb-2 uppercase tracking-wider">Text & Message</h3>
-                                <div class="space-y-3">
-                                    <div><label class="block text-xs text-gray-500 mb-1">Heading</label>
-                                    <input type="text" id="ed-heading" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" oninput="handleEditorInput()"></div>
-                                    <div><label class="block text-xs text-gray-500 mb-1">Invitation Message</label>
-                                    <textarea id="ed-message" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none resize-none" oninput="handleEditorInput()"></textarea></div>
+                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                                <h3 class="text-xs font-bold text-brand-500 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-envelope-open-text"></i> Message</h3>
+                                <div class="space-y-4">
+                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Top Heading</label>
+                                    <input type="text" id="ed-heading" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-500" oninput="handleEditorInput()"></div>
+                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Invitation Text</label>
+                                    <textarea id="ed-message" rows="4" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none resize-none focus:border-brand-500" oninput="handleEditorInput()"></textarea></div>
                                 </div>
                             </div>
 
-                            <hr class="border-gray-100">
-
-                            <div>
-                                <div class="flex items-center justify-between mb-2">
-                                    <h3 class="text-xs font-bold text-brand-500 uppercase tracking-wider">Quranic / Quote</h3>
-                                    <label class="inline-flex items-center cursor-pointer">
+                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-xs font-bold text-brand-500 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-book-quran"></i> Quranic Verse</h3>
+                                    <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" id="ed-show-quote" class="sr-only peer" onchange="handleEditorInput()">
-                                        <div class="w-7 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-500"></div>
+                                        <div class="w-8 h-4 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-brand-500"></div>
                                     </label>
                                 </div>
-                                <div class="space-y-3" id="quote-fields">
-                                    <div><label class="block text-xs text-gray-500 mb-1">Arabic Text</label>
-                                    <input type="text" id="ed-arabic" class="w-full font-arabic bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-right outline-none" oninput="handleEditorInput()"></div>
-                                    <div><label class="block text-xs text-gray-500 mb-1">Translation</label>
-                                    <input type="text" id="ed-translation" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none" oninput="handleEditorInput()"></div>
+                                <div class="space-y-4" id="quote-fields">
+                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Arabic Text</label>
+                                    <input type="text" id="ed-arabic" class="w-full font-arabic bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-lg text-right outline-none focus:border-brand-500" oninput="handleEditorInput()"></div>
+                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Translation</label>
+                                    <input type="text" id="ed-translation" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-brand-500" oninput="handleEditorInput()"></div>
                                 </div>
                             </div>
                         </div>
@@ -236,99 +234,86 @@
                     <!-- EVENTS TAB -->
                     <div id="tab-events" class="tab-content">
                          <div class="space-y-6">
-                            <div>
-                                <h3 class="text-xs font-bold text-brand-500 mb-3 uppercase tracking-wider bg-brand-50 inline-block px-2 py-1 rounded">Main Event</h3>
-                                <div class="space-y-3">
-                                    <div><label class="block text-xs text-gray-500 mb-1">Event Title</label>
-                                    <input type="text" id="ed-me-title" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" placeholder="e.g. Wedding Ceremony" oninput="handleEditorInput()"></div>
+                            <div class="bg-brand-50/50 p-5 rounded-2xl border border-brand-100 shadow-sm">
+                                <h3 class="text-xs font-bold text-brand-600 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-calendar-star"></i> Main Event</h3>
+                                <div class="space-y-4">
+                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Event Title</label>
+                                    <input type="text" id="ed-me-title" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-500" placeholder="e.g. Wedding Ceremony" oninput="handleEditorInput()"></div>
                                     <div class="grid grid-cols-2 gap-3">
-                                        <div><label class="block text-xs text-gray-500 mb-1">Date</label>
-                                        <input type="text" id="ed-me-date" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" placeholder="20 Sept 2026" oninput="handleEditorInput()"></div>
-                                        <div><label class="block text-xs text-gray-500 mb-1">Time</label>
-                                        <input type="text" id="ed-me-time" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" placeholder="11:00 AM" oninput="handleEditorInput()"></div>
+                                        <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Date</label>
+                                        <input type="text" id="ed-me-date" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-500" placeholder="20 Sept 2026" oninput="handleEditorInput()"></div>
+                                        <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Time</label>
+                                        <input type="text" id="ed-me-time" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-500" placeholder="11:00 AM" oninput="handleEditorInput()"></div>
                                     </div>
-                                    <div><label class="block text-xs text-gray-500 mb-1">Venue Name</label>
-                                    <input type="text" id="ed-me-venue" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" oninput="handleEditorInput()"></div>
-                                    <div><label class="block text-xs text-gray-500 mb-1">Address</label>
-                                    <input type="text" id="ed-me-address" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" oninput="handleEditorInput()"></div>
-                                    <div><label class="block text-xs text-gray-500 mb-1">Map URL</label>
-                                    <input type="url" id="ed-me-map" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none" placeholder="https://maps.google.com/..." oninput="handleEditorInput()"></div>
+                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Venue Name</label>
+                                    <input type="text" id="ed-me-venue" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-500" oninput="handleEditorInput()"></div>
+                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Short Address</label>
+                                    <input type="text" id="ed-me-address" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-brand-500" oninput="handleEditorInput()"></div>
+                                    <div><label class="block text-xs font-medium text-gray-600 mb-1.5">Google Maps URL</label>
+                                    <input type="url" id="ed-me-map" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-brand-500" placeholder="https://maps.google.com/..." oninput="handleEditorInput()"></div>
                                 </div>
                             </div>
                             
-                            <hr class="border-gray-200 border-dashed">
-
                             <div>
-                                <div class="flex justify-between items-center mb-3">
-                                    <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider">Extra Events</h3>
-                                    <span id="extra-events-counter" class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">0/5</span>
+                                <div class="flex justify-between items-center mb-4 px-1">
+                                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-list-ul"></i> Extra Events</h3>
+                                    <span id="extra-events-counter" class="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full font-bold">0/5</span>
                                 </div>
-                                <div id="extra-events-container" class="space-y-3 mb-3">
+                                <div id="extra-events-container" class="space-y-4 mb-4">
                                     <!-- Dynamic Extra Events -->
                                 </div>
-                                <button id="btn-add-event" onclick="addExtraEvent()" class="w-full border-2 border-dashed border-brand-200 text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-lg py-2.5 text-sm font-medium transition flex items-center justify-center gap-2">
+                                <button id="btn-add-event" onclick="addExtraEvent()" class="w-full border-2 border-dashed border-gray-300 text-gray-500 bg-gray-50 hover:bg-gray-100 hover:border-gray-400 hover:text-gray-700 rounded-2xl py-4 text-sm font-bold transition flex items-center justify-center gap-2 active:scale-[0.98]">
                                     <i class="fa-solid fa-plus"></i> Add Event
                                 </button>
-                                <p id="max-events-msg" class="text-[10px] text-center text-orange-500 mt-2 hidden">Maximum 5 extra events allowed.</p>
+                                <p id="max-events-msg" class="text-xs text-center text-orange-500 mt-3 hidden font-medium bg-orange-50 py-2 rounded-lg">Maximum 5 extra events allowed.</p>
                             </div>
                          </div>
                     </div>
 
                     <!-- DESIGN TAB -->
                     <div id="tab-design" class="tab-content">
-                        <div class="space-y-5">
-                            <div>
-                                <h3 class="text-xs font-bold text-brand-500 mb-2 uppercase tracking-wider">Colors</h3>
+                        <div class="space-y-6">
+                            <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                                <h3 class="text-xs font-bold text-brand-500 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-palette"></i> Colors</h3>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs text-gray-500 mb-1">Primary Color</label>
-                                        <div class="flex items-center gap-2">
-                                            <input type="color" id="ed-color-primary" class="w-8 h-8 rounded cursor-pointer border border-gray-200 p-0.5" onchange="handleEditorInput()">
-                                            <span class="text-xs text-gray-400 font-mono" id="lbl-color-primary"></span>
-                                        </div>
+                                    <div class="bg-white p-3 rounded-xl border border-gray-200 flex flex-col items-center">
+                                        <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase">Primary</label>
+                                        <input type="color" id="ed-color-primary" class="w-12 h-12 rounded-lg cursor-pointer border-0 p-0" onchange="handleEditorInput()">
                                     </div>
-                                    <div>
-                                        <label class="block text-xs text-gray-500 mb-1">Background Color</label>
-                                        <div class="flex items-center gap-2">
-                                            <input type="color" id="ed-color-bg" class="w-8 h-8 rounded cursor-pointer border border-gray-200 p-0.5" onchange="handleEditorInput()">
-                                            <span class="text-xs text-gray-400 font-mono" id="lbl-color-bg"></span>
-                                        </div>
+                                    <div class="bg-white p-3 rounded-xl border border-gray-200 flex flex-col items-center">
+                                        <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase">Background</label>
+                                        <input type="color" id="ed-color-bg" class="w-12 h-12 rounded-lg cursor-pointer border-0 p-0" onchange="handleEditorInput()">
                                     </div>
-                                    <div>
-                                        <label class="block text-xs text-gray-500 mb-1">Text Color</label>
-                                        <div class="flex items-center gap-2">
-                                            <input type="color" id="ed-color-text" class="w-8 h-8 rounded cursor-pointer border border-gray-200 p-0.5" onchange="handleEditorInput()">
-                                            <span class="text-xs text-gray-400 font-mono" id="lbl-color-text"></span>
-                                        </div>
+                                    <div class="bg-white p-3 rounded-xl border border-gray-200 flex flex-col items-center col-span-2">
+                                        <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase">Text Color</label>
+                                        <input type="color" id="ed-color-text" class="w-12 h-12 rounded-lg cursor-pointer border-0 p-0" onchange="handleEditorInput()">
                                     </div>
                                 </div>
                             </div>
                             
-                            <hr class="border-gray-100">
-
-                            <div>
-                                <h3 class="text-xs font-bold text-brand-500 mb-2 uppercase tracking-wider">Typography</h3>
+                            <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                                <h3 class="text-xs font-bold text-brand-500 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-font"></i> Typography</h3>
                                 <div>
-                                    <label class="block text-xs text-gray-500 mb-1">Heading Font</label>
-                                    <select id="ed-font-heading" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none" onchange="handleEditorInput()">
-                                        <option value="'Playfair Display', serif">Playfair Display (Serif)</option>
-                                        <option value="'Cinzel', serif">Cinzel (Elegant)</option>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1.5">Heading Font</label>
+                                    <select id="ed-font-heading" class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-brand-500" onchange="handleEditorInput()">
+                                        <option value="'Playfair Display', serif">Playfair Display (Elegant)</option>
+                                        <option value="'Cinzel', serif">Cinzel (Classic)</option>
                                         <option value="'Great Vibes', cursive">Great Vibes (Script)</option>
                                         <option value="'Montserrat', sans-serif">Montserrat (Modern)</option>
                                     </select>
                                 </div>
                             </div>
 
-                            <hr class="border-gray-100">
-
-                            <div>
-                                <h3 class="text-xs font-bold text-brand-500 mb-2 uppercase tracking-wider">Features</h3>
-                                <div class="space-y-2">
-                                    <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                                        <input type="checkbox" id="ed-show-bismillah" class="rounded text-brand-500 focus:ring-brand-500" onchange="handleEditorInput()"> Show Bismillah
+                            <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                                <h3 class="text-xs font-bold text-brand-500 mb-4 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-toggle-on"></i> Features</h3>
+                                <div class="space-y-4">
+                                    <label class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-brand-300 transition">
+                                        <span class="text-sm font-medium text-gray-700">Show Bismillah</span>
+                                        <input type="checkbox" id="ed-show-bismillah" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 accent-brand-500" onchange="handleEditorInput()">
                                     </label>
-                                    <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                                        <input type="checkbox" id="ed-show-qr" class="rounded text-brand-500 focus:ring-brand-500" onchange="handleEditorInput()"> Show QR Code (Map)
+                                    <label class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-xl cursor-pointer hover:border-brand-300 transition">
+                                        <span class="text-sm font-medium text-gray-700">Show Map Button</span>
+                                        <input type="checkbox" id="ed-show-qr" class="w-5 h-5 rounded text-brand-500 focus:ring-brand-500 accent-brand-500" onchange="handleEditorInput()">
                                     </label>
                                 </div>
                             </div>
@@ -338,50 +323,52 @@
                     <!-- PHOTOS TAB -->
                     <div id="tab-photos" class="tab-content">
                         <div class="space-y-4">
-                            <div class="bg-blue-50 border border-blue-100 p-3 rounded-lg flex items-start gap-2 mb-4">
-                                <i class="fa-solid fa-bolt text-blue-500 mt-0.5"></i>
-                                <p class="text-xs text-blue-800">Images are auto-compressed (Max 150KB) and saved directly. No extra storage required!</p>
+                            <div class="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-start gap-3 mb-6">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-bolt text-blue-500"></i>
+                                </div>
+                                <p class="text-xs text-blue-800 leading-relaxed mt-0.5"><span class="font-bold">Auto-Compression:</span> Images are automatically compressed to ~150KB to ensure fast loading times.</p>
                             </div>
                             
                             <!-- Groom Photo -->
-                            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between hover:border-brand-300 transition bg-white">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 rounded-full bg-gray-50 overflow-hidden flex items-center justify-center border border-gray-200 relative shadow-sm">
+                            <div class="border border-gray-200 rounded-2xl p-5 flex items-center justify-between hover:border-brand-300 transition bg-white shadow-sm">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-16 h-16 rounded-full bg-gray-50 overflow-hidden flex items-center justify-center border-2 border-gray-100 relative shadow-inner">
                                         <img id="prev-groom-photo" src="" class="w-full h-full object-cover hidden">
-                                        <i class="fa-solid fa-user text-gray-300" id="icon-groom-photo"></i>
+                                        <i class="fa-solid fa-user text-gray-300 text-2xl" id="icon-groom-photo"></i>
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-gray-800">Groom Photo</p>
-                                        <p class="text-[10px] text-gray-400">Square 1:1 format</p>
+                                        <p class="text-[10px] text-gray-400 mt-0.5">Square 1:1 format</p>
                                     </div>
                                 </div>
-                                <label class="cursor-pointer bg-brand-50 hover:bg-brand-100 text-brand-700 px-4 py-2 rounded-lg border border-brand-200 text-xs font-semibold transition shadow-sm">
+                                <label class="cursor-pointer bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition active:scale-95 shadow-md">
                                     Upload
                                     <input type="file" class="hidden" accept="image/jpeg, image/png, image/webp" onchange="handleImageUpload(this, 'groomPhoto')">
                                 </label>
                             </div>
 
                             <!-- Bride Photo -->
-                            <div class="border border-gray-200 rounded-xl p-4 flex items-center justify-between hover:border-brand-300 transition bg-white">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 rounded-full bg-gray-50 overflow-hidden flex items-center justify-center border border-gray-200 relative shadow-sm">
+                            <div class="border border-gray-200 rounded-2xl p-5 flex items-center justify-between hover:border-brand-300 transition bg-white shadow-sm">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-16 h-16 rounded-full bg-gray-50 overflow-hidden flex items-center justify-center border-2 border-gray-100 relative shadow-inner">
                                         <img id="prev-bride-photo" src="" class="w-full h-full object-cover hidden">
-                                        <i class="fa-solid fa-user text-gray-300" id="icon-bride-photo"></i>
+                                        <i class="fa-solid fa-user text-gray-300 text-2xl" id="icon-bride-photo"></i>
                                     </div>
                                     <div>
                                         <p class="text-sm font-bold text-gray-800">Bride Photo</p>
-                                        <p class="text-[10px] text-gray-400">Square 1:1 format</p>
+                                        <p class="text-[10px] text-gray-400 mt-0.5">Square 1:1 format</p>
                                     </div>
                                 </div>
-                                <label class="cursor-pointer bg-brand-50 hover:bg-brand-100 text-brand-700 px-4 py-2 rounded-lg border border-brand-200 text-xs font-semibold transition shadow-sm">
+                                <label class="cursor-pointer bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition active:scale-95 shadow-md">
                                     Upload
                                     <input type="file" class="hidden" accept="image/jpeg, image/png, image/webp" onchange="handleImageUpload(this, 'bridePhoto')">
                                 </label>
                             </div>
 
                         </div>
-                        <div class="mt-10 pt-6 border-t border-gray-200 text-center">
-                            <button onclick="deleteInvitation()" class="text-red-500 hover:text-white hover:bg-red-500 border border-red-500 px-6 py-2 rounded-lg text-sm font-medium transition w-full sm:w-auto"><i class="fa-solid fa-trash mr-2"></i> Delete Invitation</button>
+                        <div class="mt-12 pt-8 border-t border-gray-200 text-center">
+                            <button onclick="deleteInvitation()" class="text-red-500 hover:text-white hover:bg-red-500 border-2 border-red-100 hover:border-red-500 bg-red-50 px-8 py-3 rounded-xl text-sm font-bold transition w-full active:scale-95"><i class="fa-solid fa-trash mr-2"></i> Delete Invitation</button>
                         </div>
                     </div>
 
@@ -389,7 +376,7 @@
             </div>
 
             <!-- Bottom Navigation for Mobile (Replaces Top Tabs) -->
-            <div class="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-between px-2 pb-safe shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-40">
+            <div class="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-between px-1 pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.08)] z-40 h-[70px]">
                 <button class="tab-btn active" onclick="switchTab('tab-template')">
                     <i class="fa-solid fa-layer-group"></i><span>Theme</span>
                 </button>
@@ -397,7 +384,7 @@
                     <i class="fa-solid fa-pen-nib"></i><span>Details</span>
                 </button>
                 <button class="tab-btn" onclick="switchTab('tab-events')">
-                    <i class="fa-regular fa-calendar"></i><span>Events</span>
+                    <i class="fa-regular fa-calendar-star"></i><span>Events</span>
                 </button>
                 <button class="tab-btn" onclick="switchTab('tab-design')">
                     <i class="fa-solid fa-palette"></i><span>Design</span>
@@ -408,44 +395,45 @@
             </div>
 
             <!-- Desktop Side Tabs (Hidden on Mobile) -->
-            <div class="hidden lg:flex w-20 bg-gray-900 flex-col items-center py-6 gap-6 z-20 shrink-0">
-                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1 transition" onclick="switchTab('tab-template')"><i class="fa-solid fa-layer-group text-xl"></i><span class="text-[10px]">Theme</span></button>
-                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1 transition" onclick="switchTab('tab-content')"><i class="fa-solid fa-pen-nib text-xl"></i><span class="text-[10px]">Details</span></button>
-                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1 transition" onclick="switchTab('tab-events')"><i class="fa-regular fa-calendar text-xl"></i><span class="text-[10px]">Events</span></button>
-                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1 transition" onclick="switchTab('tab-design')"><i class="fa-solid fa-palette text-xl"></i><span class="text-[10px]">Design</span></button>
-                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1 transition" onclick="switchTab('tab-photos')"><i class="fa-regular fa-image text-xl"></i><span class="text-[10px]">Photos</span></button>
+            <div class="hidden lg:flex w-24 bg-gray-900 flex-col items-center py-8 gap-6 z-20 shrink-0 shadow-2xl">
+                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1.5 transition" onclick="switchTab('tab-template')"><i class="fa-solid fa-layer-group text-2xl"></i><span class="text-[10px] font-bold uppercase tracking-wider">Theme</span></button>
+                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1.5 transition mt-4" onclick="switchTab('tab-content')"><i class="fa-solid fa-pen-nib text-2xl"></i><span class="text-[10px] font-bold uppercase tracking-wider">Details</span></button>
+                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1.5 transition mt-4" onclick="switchTab('tab-events')"><i class="fa-regular fa-calendar-star text-2xl"></i><span class="text-[10px] font-bold uppercase tracking-wider">Events</span></button>
+                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1.5 transition mt-4" onclick="switchTab('tab-design')"><i class="fa-solid fa-palette text-2xl"></i><span class="text-[10px] font-bold uppercase tracking-wider">Design</span></button>
+                <button class="text-gray-400 hover:text-white flex flex-col items-center gap-1.5 transition mt-4" onclick="switchTab('tab-photos')"><i class="fa-regular fa-image text-2xl"></i><span class="text-[10px] font-bold uppercase tracking-wider">Photos</span></button>
             </div>
 
             <!-- Live Preview Panel -->
             <!-- Mobile Preview Modal (Slide up) -->
-            <div id="mobile-preview-modal" class="fixed inset-0 bg-gray-900/95 z-[60] transform translate-y-full opacity-0 pointer-events-none lg:translate-y-0 lg:opacity-100 lg:pointer-events-auto lg:relative lg:flex-grow lg:bg-gray-200/60 flex flex-col items-center justify-center p-4 overflow-hidden transition-all duration-300 ease-in-out">
+            <div id="mobile-preview-modal" class="fixed inset-0 bg-gray-900/95 z-[60] transform translate-y-full opacity-0 pointer-events-none lg:translate-y-0 lg:opacity-100 lg:pointer-events-auto lg:relative lg:flex-grow lg:bg-gray-100 flex flex-col items-center justify-center p-4 overflow-hidden transition-all duration-300 ease-in-out">
                 
                 <!-- Close button for Mobile Modal -->
-                <button onclick="toggleMobilePreview()" class="lg:hidden absolute top-6 right-6 w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur rounded-full text-white flex items-center justify-center z-20 transition">
-                    <i class="fa-solid fa-xmark text-xl"></i>
+                <button onclick="toggleMobilePreview()" class="lg:hidden absolute top-6 right-6 w-12 h-12 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md rounded-full text-white flex items-center justify-center z-20 transition active:scale-95 shadow-lg">
+                    <i class="fa-solid fa-chevron-down text-xl"></i>
                 </button>
 
                 <div class="hidden lg:flex absolute top-4 right-4 z-10 gap-2">
-                    <button onclick="zoomPreview(0.1)" class="w-8 h-8 bg-white rounded shadow-sm text-gray-600 hover:text-brand-500"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
-                    <button onclick="zoomPreview(-0.1)" class="w-8 h-8 bg-white rounded shadow-sm text-gray-600 hover:text-brand-500"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                    <button onclick="zoomPreview(0.1)" class="w-10 h-10 bg-white rounded-lg shadow-sm text-gray-600 hover:text-brand-500 transition active:scale-95 border border-gray-200"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                    <button onclick="zoomPreview(-0.1)" class="w-10 h-10 bg-white rounded-lg shadow-sm text-gray-600 hover:text-brand-500 transition active:scale-95 border border-gray-200"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
                 </div>
                 
                 <!-- Phone Mockup Container -->
-                <div id="preview-container" class="w-full max-w-[360px] h-[90vh] lg:h-[700px] lg:max-h-full bg-white shadow-2xl rounded-[2rem] lg:rounded-3xl overflow-hidden border-[6px] border-gray-800 lg:border-gray-800 relative transition-transform duration-300 mx-auto">
+                <div id="preview-container" class="w-full max-w-[380px] h-[85vh] lg:h-[750px] lg:max-h-full bg-white shadow-2xl rounded-[2.5rem] lg:rounded-[3rem] overflow-hidden border-[8px] border-gray-900 relative transition-transform duration-300 mx-auto mt-10 lg:mt-0">
                     <!-- RENDERER INJECTS HTML HERE -->
                     <div id="renderer-output-editor" class="w-full h-full relative"></div>
                 </div>
             </div>
 
             <!-- Floating Action Button for Mobile Preview -->
-            <button onclick="toggleMobilePreview()" class="lg:hidden fixed bottom-20 right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center text-xl z-30 hover:bg-brand-600 transition hover:scale-105 active:scale-95">
+            <button onclick="toggleMobilePreview()" class="lg:hidden fixed bottom-24 right-4 w-16 h-16 bg-gray-900 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30 hover:bg-black transition active:scale-90 border-4 border-white">
                 <i class="fa-solid fa-eye"></i>
             </button>
         </div>
     </div>
 
     <!-- 4. PUBLIC INVITATION VIEW -->
-    <div id="view-public" class="view-section h-full w-full bg-black flex flex-col items-center overflow-y-auto">
+    <!-- Fixed display to flex column -->
+    <div id="view-public" class="view-section h-full w-full bg-black flex-col items-center overflow-y-auto">
         <div class="w-full max-w-[450px] min-h-screen bg-white relative flex flex-col shadow-2xl mx-auto">
             
             <div class="flex-grow relative">
@@ -454,11 +442,11 @@
             </div>
 
             <!-- Public Action Bar -->
-            <div id="public-action-bar" class="sticky bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-100 p-4 pb-6 flex gap-3 z-50 rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-                <button onclick="publicShareWhatsApp()" class="flex-1 bg-[#25D366] text-white py-3 rounded-xl font-semibold shadow-sm hover:bg-[#20bd5a] transition flex items-center justify-center gap-2">
+            <div id="public-action-bar" class="sticky bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 p-4 pb-6 flex gap-3 z-50 rounded-t-3xl shadow-[0_-10px_30px_rgba(0,0,0,0.1)]">
+                <button onclick="publicShareWhatsApp()" class="flex-1 bg-[#25D366] text-white py-4 rounded-2xl font-bold shadow-md hover:bg-[#20bd5a] transition flex items-center justify-center gap-2 active:scale-95 text-base">
                     <i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp
                 </button>
-                <button onclick="publicCopyLink()" class="flex-1 bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold shadow-sm hover:bg-gray-200 transition flex items-center justify-center gap-2">
+                <button onclick="publicCopyLink()" class="flex-1 bg-gray-100 text-gray-800 py-4 rounded-2xl font-bold shadow-sm hover:bg-gray-200 transition flex items-center justify-center gap-2 border border-gray-200 active:scale-95 text-base">
                     <i class="fa-regular fa-copy text-lg"></i> Copy Link
                 </button>
             </div>
@@ -466,24 +454,25 @@
     </div>
 
     <!-- 5. ERROR VIEW -->
-    <div id="view-error" class="view-section h-full w-full flex items-center justify-center bg-gray-50">
-        <div class="text-center p-8 bg-white rounded-2xl shadow-sm border border-gray-100 max-w-md w-full mx-4">
-            <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fa-solid fa-link-slash text-2xl text-red-400"></i>
+    <div id="view-error" class="view-section h-full w-full flex-col items-center justify-center bg-gray-50">
+        <div class="text-center p-10 bg-white rounded-3xl shadow-xl border border-gray-100 max-w-md w-full mx-4">
+            <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-link-slash text-3xl text-red-400"></i>
             </div>
-            <h1 class="text-2xl font-serif font-bold text-gray-900 mb-2">Unavailable</h1>
-            <p class="text-gray-500 mb-6 text-sm">This invitation link is invalid or has been unpublished by the creator.</p>
-            <button onclick="window.location.hash='#/'" class="bg-gray-900 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-gray-800 transition">Go Home</button>
+            <h1 class="text-3xl font-serif font-bold text-gray-900 mb-3">Unavailable</h1>
+            <p class="text-gray-500 mb-8 text-sm">This invitation link is invalid or has been set to private by the creator.</p>
+            <button onclick="window.location.hash='#/'" class="bg-gray-900 text-white px-8 py-3.5 rounded-xl font-bold hover:bg-gray-800 transition active:scale-95 shadow-md">Go Home</button>
         </div>
     </div>
 
     <script type="module">
         // Import Firebase v10 Modular SDKs
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        // Switched back to signInWithPopup for reliability without page reload issues on mobile
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         
-        // Firebase Config (User Provided)
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCp-NKbL_kmB2nzlTv9fSisc2cVuE55p-Q",
             authDomain: "online-angadi-003.firebaseapp.com",
@@ -508,7 +497,7 @@
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            // Removed Firebase Storage initialization entirely
+            // Storage removed as requested, images go to Firestore as Base64
         } catch (e) {
             console.error("Firebase init failed:", e);
             showToast("Firebase Config Error.", "error");
@@ -590,21 +579,22 @@
                 html += `
                     <div class="my-8 py-6 border-y border-opacity-20 w-3/4 mx-auto" style="border-color: var(--primary)">
                         <p class="font-arabic text-2xl mb-3" style="color: var(--primary)">${c.arabicText}</p>
-                        ${c.translation ? `<p class="text-[10px] uppercase tracking-wider opacity-60">${c.translation}</p>` : ''}
+                        ${c.translation ? `<p class="text-[10px] uppercase tracking-wider opacity-60 mt-3">${c.translation}</p>` : ''}
                     </div>
                 `;
             }
 
             html += `
-                <div class="bg-white/40 backdrop-blur-sm rounded-xl p-6 w-full max-w-sm mb-8 shadow-sm border border-black/5">
-                    <h3 class="text-[11px] font-bold uppercase tracking-widest mb-4" style="color: var(--primary)">${me.title || 'Main Event'}</h3>
-                    <div class="font-medium text-lg mb-1">${me.date || 'Date'}</div>
-                    <div class="text-sm opacity-80 mb-4">${me.time || 'Time'}</div>
-                    <div class="font-semibold">${me.venue || 'Venue'}</div>
-                    <div class="text-xs opacity-70 mt-1 mb-4">${me.address || 'Address'}</div>
+                <div class="bg-white/60 backdrop-blur-md rounded-2xl p-6 w-full max-w-sm mb-8 shadow-sm border border-black/5 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1" style="background-color: var(--primary)"></div>
+                    <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color: var(--primary)">${me.title || 'Main Event'}</h3>
+                    <div class="font-semibold text-lg mb-1 text-gray-900">${me.date || 'Date'}</div>
+                    <div class="text-sm text-gray-600 mb-5 font-medium">${me.time || 'Time'}</div>
+                    <div class="font-bold text-gray-800">${me.venue || 'Venue'}</div>
+                    <div class="text-xs text-gray-500 mt-1 mb-5">${me.address || 'Address'}</div>
                     ${(settings.showMap && me.mapUrl) ? `
-                        <a href="${me.mapUrl}" target="_blank" class="inline-block text-[10px] uppercase tracking-wider font-bold border px-4 py-2 rounded-full hover:bg-black/5 transition" style="border-color: var(--primary); color: var(--primary)">
-                            <i class="fa-solid fa-location-dot mr-1"></i> Get Directions
+                        <a href="${me.mapUrl}" target="_blank" class="inline-block text-[10px] uppercase tracking-wider font-bold border-2 px-6 py-2.5 rounded-full hover:bg-black/5 transition shadow-sm" style="border-color: var(--primary); color: var(--primary)">
+                            <i class="fa-solid fa-location-dot mr-1.5"></i> Get Directions
                         </a>
                     ` : ''}
                 </div>
@@ -614,10 +604,10 @@
                 html += `<div class="w-full max-w-sm space-y-4 mb-10">`;
                 ex.forEach(ev => {
                     html += `
-                        <div class="border-l-2 pl-4 text-left py-1 opacity-90" style="border-color: var(--primary)">
-                            <h4 class="text-sm font-bold">${ev.name}</h4>
-                            <p class="text-[11px] mt-1">${ev.date} | ${ev.time}</p>
-                            <p class="text-[11px] font-medium">${ev.venue}</p>
+                        <div class="bg-white/30 backdrop-blur-sm border-l-4 pl-4 text-left py-2 opacity-90 rounded-r-lg" style="border-color: var(--primary)">
+                            <h4 class="text-sm font-bold text-gray-800">${ev.name}</h4>
+                            <p class="text-[11px] mt-1 font-medium text-gray-600">${ev.date} | ${ev.time}</p>
+                            <p class="text-[11px] font-semibold text-gray-700 mt-0.5">${ev.venue}</p>
                         </div>
                     `;
                 });
@@ -625,9 +615,9 @@
             }
 
             if(couple.groomPhoto || couple.bridePhoto) {
-                 html += `<div class="flex gap-4 mb-8 justify-center w-full">`;
-                 if(couple.groomPhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-4 bg-gray-100 shadow-md flex items-center justify-center" style="border-color: var(--primary)"><img src="${couple.groomPhoto}" class="w-full h-full object-cover"></div>`;
-                 if(couple.bridePhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-4 bg-gray-100 shadow-md flex items-center justify-center" style="border-color: var(--primary)"><img src="${couple.bridePhoto}" class="w-full h-full object-cover"></div>`;
+                 html += `<div class="flex gap-6 mb-8 justify-center w-full">`;
+                 if(couple.groomPhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-[3px] bg-gray-100 shadow-lg flex items-center justify-center" style="border-color: var(--primary)"><img src="${couple.groomPhoto}" class="w-full h-full object-cover"></div>`;
+                 if(couple.bridePhoto) html += `<div class="w-24 h-24 rounded-full overflow-hidden border-[3px] bg-gray-100 shadow-lg flex items-center justify-center" style="border-color: var(--primary)"><img src="${couple.bridePhoto}" class="w-full h-full object-cover"></div>`;
                  html += `</div>`;
             }
 
@@ -640,19 +630,28 @@
            ========================================== */
         function handleRoute() {
             const hash = window.location.hash || '#/';
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            
+            // STRICT HIDING: Force hide all views to prevent any overlaps
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.remove('active');
+                el.style.display = 'none'; 
+            });
 
             if (hash === '#/') {
-                if (currentUser) window.location.hash = '#dashboard';
-                else {
-                    document.getElementById('view-login').style.display = 'block';
-                    document.getElementById('view-login').classList.add('active');
+                if (currentUser) {
+                    window.location.hash = '#dashboard';
+                } else {
+                    const view = document.getElementById('view-login');
+                    view.style.display = 'flex'; // Use flex for centering
+                    setTimeout(() => view.classList.add('active'), 10);
                 }
             } 
             else if (hash === '#dashboard') {
                 if (!currentUser) window.location.hash = '#/';
                 else {
-                    document.getElementById('view-dashboard').classList.add('active');
+                    const view = document.getElementById('view-dashboard');
+                    view.style.display = 'flex';
+                    setTimeout(() => view.classList.add('active'), 10);
                     loadDashboard();
                 }
             } 
@@ -660,42 +659,36 @@
                 if (!currentUser) window.location.hash = '#/';
                 else {
                     state.editingId = hash.replace('#editor/', '');
-                    document.getElementById('view-editor').classList.add('active');
+                    const view = document.getElementById('view-editor');
+                    view.style.display = 'flex';
+                    setTimeout(() => view.classList.add('active'), 10);
                     loadEditor();
                 }
             }
             else if (hash.startsWith('#/i/')) {
                 const code = hash.replace('#/i/', '');
-                document.getElementById('view-public').classList.add('active');
+                const view = document.getElementById('view-public');
+                view.style.display = 'flex';
+                setTimeout(() => view.classList.add('active'), 10);
                 loadPublicInvitation(code);
             }
             else {
-                document.getElementById('view-error').classList.add('active');
+                const view = document.getElementById('view-error');
+                view.style.display = 'flex';
+                setTimeout(() => view.classList.add('active'), 10);
             }
         }
         window.addEventListener('hashchange', handleRoute);
 
         /* ==========================================
-           AUTH LOGIC
+           AUTH LOGIC (Fixed using Popup)
            ========================================== */
         if(auth) {
-            // Handle redirect result specifically for mobile browsers
-            getRedirectResult(auth).then((result) => {
-                if(result) {
-                    hideLoader();
-                    showToast("Login successful!", "success");
-                }
-            }).catch((error) => {
-                hideLoader();
-                console.error("Auth Error:", error);
-                showToast("Login error. Please try again.", "error");
-            });
-
             onAuthStateChanged(auth, (user) => {
                 currentUser = user;
                 if (user) {
                     document.getElementById('user-name').innerText = user.displayName.split(' ')[0];
-                    document.getElementById('dash-greeting').innerText = `Hello, ${user.displayName.split(' ')[0]}`;
+                    document.getElementById('dash-greeting').innerText = `Good evening, ${user.displayName.split(' ')[0]}!`;
                     if(user.photoURL) {
                         const img = document.getElementById('user-avatar');
                         img.src = user.photoURL;
@@ -706,10 +699,19 @@
             });
         }
 
-        document.getElementById('btn-google-login')?.addEventListener('click', () => {
+        document.getElementById('btn-google-login')?.addEventListener('click', async () => {
             showLoader("Signing in securely...");
             const provider = new GoogleAuthProvider();
-            signInWithRedirect(auth, provider);
+            try {
+                // Switched to popup for reliable flow without losing hash or causing white screens
+                await signInWithPopup(auth, provider);
+                hideLoader();
+                showToast("Login successful!", "success");
+            } catch (error) {
+                hideLoader();
+                console.error("Auth Error:", error);
+                showToast("Login error. Please try again.", "error");
+            }
         });
 
         document.getElementById('btn-logout')?.addEventListener('click', () => {
@@ -743,23 +745,23 @@
                         const isPub = data.status === 'published';
                         
                         const card = document.createElement('div');
-                        card.className = "bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition group";
+                        card.className = "bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-lg transition-all duration-300 group transform hover:-translate-y-1";
                         card.innerHTML = `
-                            <div class="h-32 bg-gray-100 relative overflow-hidden bg-cover bg-center" style="background-image: url('${t.thumb}')">
-                                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition"></div>
-                                <div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold uppercase shadow-sm ${isPub ? 'text-green-600' : 'text-gray-500'}">
+                            <div class="h-40 bg-gray-100 relative overflow-hidden bg-cover bg-center border-b border-gray-50" style="background-image: url('${t.thumb}')">
+                                <div class="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition duration-300"></div>
+                                <div class="absolute top-4 right-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold uppercase shadow-sm tracking-wider ${isPub ? 'text-green-600' : 'text-gray-500'}">
                                     ${isPub ? '● Live' : 'Draft'}
                                 </div>
                             </div>
-                            <div class="p-4 flex-grow flex flex-col">
-                                <h3 class="font-serif font-bold text-lg text-gray-900 truncate">${data.couple?.groom || 'Groom'} & ${data.couple?.bride || 'Bride'}</h3>
-                                <p class="text-xs text-gray-500 mt-1 mb-4 flex items-center gap-1"><i class="fa-solid fa-link text-[10px]"></i> /i/${id}</p>
+                            <div class="p-5 flex-grow flex flex-col">
+                                <h3 class="font-serif font-bold text-xl text-gray-900 truncate">${data.couple?.groom || 'Groom'} & ${data.couple?.bride || 'Bride'}</h3>
+                                <p class="text-xs text-gray-400 mt-1.5 mb-5 flex items-center gap-1.5 font-medium"><i class="fa-solid fa-link text-[10px]"></i> yourdomain.com/i/${id}</p>
                                 
-                                <div class="mt-auto grid grid-cols-2 gap-2 pt-3 border-t border-gray-50">
-                                    <a href="#editor/${id}" class="text-center bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 rounded-lg text-xs font-semibold transition">Edit</a>
+                                <div class="mt-auto grid grid-cols-2 gap-3 pt-4 border-t border-gray-50">
+                                    <a href="#editor/${id}" class="text-center bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 py-2.5 rounded-xl text-xs font-bold transition active:scale-95">Edit Card</a>
                                     ${isPub ? 
-                                    `<a href="#/i/${id}" target="_blank" class="text-center bg-brand-50 hover:bg-brand-100 text-brand-600 py-2 rounded-lg text-xs font-semibold transition">View</a>` 
-                                    : `<button disabled class="text-center bg-gray-50 text-gray-400 py-2 rounded-lg text-xs font-semibold opacity-50 cursor-not-allowed">View</button>`}
+                                    `<a href="#/i/${id}" target="_blank" class="text-center bg-brand-50 hover:bg-brand-100 border border-brand-200 text-brand-700 py-2.5 rounded-xl text-xs font-bold transition active:scale-95">View Live</a>` 
+                                    : `<button disabled class="text-center bg-gray-50 text-gray-400 py-2.5 rounded-xl text-xs font-bold opacity-50 cursor-not-allowed">View Live</button>`}
                                 </div>
                             </div>
                         `;
@@ -773,7 +775,7 @@
             hideLoader();
         }
 
-        // GENERATE UNIQUE 5 CHAR CODE (Using secure randomizer)
+        // GENERATE UNIQUE 5 CHAR CODE
         function generateSecureCode() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             const array = new Uint32Array(5);
@@ -788,11 +790,10 @@
         window.createNewInvitation = async function() {
             showLoader("Preparing workspace...");
             try {
-                // Generate a secure 5-character code
                 const code = generateSecureCode();
 
                 const initData = {
-                    ownerUid: currentUser.uid,
+                    ownerUid: currentUser.uid, // MUST MATCH REQUEST.AUTH.UID
                     code: code,
                     status: 'draft',
                     templateId: 'islamic-gold',
@@ -806,13 +807,15 @@
                     updatedAt: serverTimestamp()
                 };
 
+                // FIXED: Create doc directly instead of getting it first to avoid permission denied error
                 await setDoc(doc(db, "invitations", code), initData);
                 window.location.hash = `#editor/${code}`;
             } catch (error) {
                 console.error(error);
                 showToast("Failed to create invitation", "error");
+            } finally {
+                hideLoader();
             }
-            hideLoader();
         }
 
         /* ==========================================
@@ -848,7 +851,6 @@
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-btn').forEach(b => {
                 b.classList.remove('active');
-                // Remove desktop active styling if needed
                 if(b.parentElement.classList.contains('bg-gray-900')) {
                     b.classList.remove('text-white');
                     b.classList.add('text-gray-400');
@@ -866,9 +868,19 @@
             document.getElementById(tabId).classList.add('active');
         }
 
+        // Fixed Mobile Preview Toggle using Tailwind classes correctly
         window.toggleMobilePreview = function() {
             const modal = document.getElementById('mobile-preview-modal');
-            modal.classList.toggle('preview-open');
+            
+            if (modal.classList.contains('opacity-0')) {
+                // Open
+                modal.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
+                modal.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+            } else {
+                // Close
+                modal.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
+                modal.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+            }
         }
 
         function populateTemplateList() {
@@ -877,9 +889,9 @@
             Object.values(TEMPLATES).forEach(t => {
                 const isSelected = state.data.templateId === t.id;
                 container.innerHTML += `
-                    <div onclick="selectTemplate('${t.id}')" class="cursor-pointer border-2 rounded-xl overflow-hidden transition ${isSelected ? 'border-brand-500 shadow-md ring-2 ring-brand-200' : 'border-gray-100 hover:border-gray-300'}">
-                        <div class="h-32 bg-cover bg-center" style="background-image: url('${t.thumb}')"></div>
-                        <div class="p-2 text-center text-xs font-semibold bg-white text-gray-800">${t.name}</div>
+                    <div onclick="selectTemplate('${t.id}')" class="cursor-pointer border-2 rounded-2xl overflow-hidden transition ${isSelected ? 'border-brand-500 shadow-md ring-4 ring-brand-100 scale-[0.98]' : 'border-gray-100 hover:border-gray-300'}">
+                        <div class="h-36 bg-cover bg-center" style="background-image: url('${t.thumb}')"></div>
+                        <div class="p-3 text-center text-xs font-bold bg-white text-gray-800 tracking-wide">${t.name}</div>
                     </div>
                 `;
             });
@@ -964,10 +976,6 @@
             state.data.design.colors.text = document.getElementById('ed-color-text').value;
             state.data.design.fonts.heading = document.getElementById('ed-font-heading').value;
             
-            document.getElementById('lbl-color-primary').innerText = state.data.design.colors.primary;
-            document.getElementById('lbl-color-bg').innerText = state.data.design.colors.bg;
-            document.getElementById('lbl-color-text').innerText = state.data.design.colors.text;
-            
             state.data.settings.showBismillah = document.getElementById('ed-show-bismillah').checked;
             state.data.settings.showMap = document.getElementById('ed-show-qr').checked;
             
@@ -1018,14 +1026,14 @@
 
             ex.forEach((ev, i) => {
                 container.innerHTML += `
-                    <div class="bg-white border border-gray-200 p-3 rounded-lg relative shadow-sm">
-                        <button onclick="removeExtraEvent(${i})" class="absolute top-2 right-2 text-red-400 hover:text-red-600 p-1"><i class="fa-solid fa-xmark"></i></button>
-                        <input type="text" value="${ev.name || ''}" placeholder="Event Name" class="text-sm font-bold w-3/4 outline-none border-b border-gray-100 mb-2" onchange="updateEx(${i}, 'name', this.value)">
-                        <div class="grid grid-cols-2 gap-2 mb-2">
-                            <input type="text" value="${ev.date || ''}" placeholder="Date" class="text-xs bg-gray-50 border border-gray-200 px-2 py-1 rounded" onchange="updateEx(${i}, 'date', this.value)">
-                            <input type="text" value="${ev.time || ''}" placeholder="Time" class="text-xs bg-gray-50 border border-gray-200 px-2 py-1 rounded" onchange="updateEx(${i}, 'time', this.value)">
+                    <div class="bg-white border border-gray-200 p-4 rounded-2xl relative shadow-sm hover:border-brand-200 transition">
+                        <button onclick="removeExtraEvent(${i})" class="absolute top-3 right-3 w-8 h-8 bg-red-50 text-red-400 hover:text-red-600 hover:bg-red-100 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+                        <input type="text" value="${ev.name || ''}" placeholder="Event Name" class="text-sm font-bold w-3/4 outline-none border-b-2 border-transparent focus:border-brand-500 mb-3 bg-transparent" onchange="updateEx(${i}, 'name', this.value)">
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <input type="text" value="${ev.date || ''}" placeholder="Date" class="text-xs bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl focus:border-brand-500 outline-none" onchange="updateEx(${i}, 'date', this.value)">
+                            <input type="text" value="${ev.time || ''}" placeholder="Time" class="text-xs bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl focus:border-brand-500 outline-none" onchange="updateEx(${i}, 'time', this.value)">
                         </div>
-                        <input type="text" value="${ev.venue || ''}" placeholder="Venue Name" class="w-full text-xs bg-gray-50 border border-gray-200 px-2 py-1 rounded" onchange="updateEx(${i}, 'venue', this.value)">
+                        <input type="text" value="${ev.venue || ''}" placeholder="Venue Name" class="w-full text-xs bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl focus:border-brand-500 outline-none" onchange="updateEx(${i}, 'venue', this.value)">
                     </div>
                 `;
             });
@@ -1084,10 +1092,8 @@
         }
 
         /* ==========================================
-           IMAGE UPLOAD (COMPRESSION & DIRECT SAVE)
+           IMAGE UPLOAD (COMPRESSION & Base64 to Firestore)
            ========================================== */
-           
-        // Helper to compress image and convert to Base64 (Data URL)
         function compressImageToBase64(file, maxSizeKB) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -1100,8 +1106,7 @@
                         let width = img.width;
                         let height = img.height;
 
-                        // Initial structural resize to keep dimensions manageable
-                        const maxDim = 600;
+                        const maxDim = 500;
                         if (width > height && width > maxDim) {
                             height = Math.round(height * (maxDim / width));
                             width = maxDim;
@@ -1117,11 +1122,8 @@
 
                         let quality = 0.8;
                         let base64String = canvas.toDataURL('image/jpeg', quality);
-                        
-                        // Estimate size of base64 in KB
                         let sizeKB = Math.round((base64String.length * 3) / 4 / 1024);
 
-                        // Loop to reduce quality until size is under limit
                         while (sizeKB > maxSizeKB && quality > 0.1) {
                             quality -= 0.1;
                             base64String = canvas.toDataURL('image/jpeg', quality);
@@ -1141,12 +1143,12 @@
             if(!file) return;
 
             try {
-                showLoader("Processing Image...");
+                showLoader("Compressing & Saving Image...");
                 
-                // 1. Compress image client-side to maximum 150KB
+                // Compress to max 150KB and get Base64
                 const base64Data = await compressImageToBase64(file, 150);
                 
-                // 2. Save generated Base64 Data directly to document state (No Firebase Storage used!)
+                // Save Base64 directly to Document (No Storage required)
                 state.data.couple[targetField] = base64Data;
                 
                 const imgEl = document.getElementById(`prev-${targetField.replace('Photo', '')}-photo`);
@@ -1157,8 +1159,8 @@
                     iconEl.classList.add('hidden');
                 }
                 
-                handleEditorInput(); // Triggers auto-save to Firestore
-                showToast("Image processed successfully!", "success");
+                handleEditorInput(); 
+                showToast("Image uploaded successfully!", "success");
             } catch(e) {
                 console.error(e);
                 showToast("Image processing failed.", "error");
@@ -1218,7 +1220,7 @@
         /* ==========================================
            UTILITIES
            ========================================== */
-        function showLoader(msg = "Please wait...") { 
+        function showLoader(msg = "Loading...") { 
             document.getElementById('loader-text').innerText = msg;
             document.getElementById('global-loader').classList.remove('hidden'); 
         }
@@ -1229,14 +1231,14 @@
         function showToast(msg, type='info') {
             const cont = document.getElementById('toast-container');
             const el = document.createElement('div');
-            el.className = `toast ${type === 'error' ? 'bg-red-600' : type === 'success' ? 'bg-green-600' : 'bg-gray-800'}`;
+            el.className = `toast ${type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-600' : 'bg-gray-900'}`;
             el.innerHTML = msg;
             cont.appendChild(el);
             setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            setTimeout(handleRoute, 800); 
+            setTimeout(handleRoute, 100); 
         });
 
     </script>
