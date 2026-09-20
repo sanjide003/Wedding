@@ -1,5 +1,5 @@
 window.registerTemplate({
-    id: 'royal-emerald-nikah',
+    id: 'emerald-garden-nikah',
     name: 'Royal Emerald & Gold Nikah',
     thumb: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=700&q=80',
     freeform: false,
