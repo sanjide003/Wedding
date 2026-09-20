@@ -434,15 +434,20 @@
            ========================================== */
         function handleRoute() {
             const hash = window.location.hash || '#/';
+            
+            // ബ്ലാങ്ക് സ്ക്രീൻ ഒഴിവാക്കാൻ എല്ലാ സ്ക്രീനുകളും തൽക്ഷണം ഹൈഡ് ചെയ്യുക
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.remove('active');
-                setTimeout(() => el.style.display = 'none', 300); 
+                el.style.display = 'none'; 
             });
 
             const showView = (id) => {
                 const el = document.getElementById(id);
-                el.style.display = 'flex';
-                setTimeout(() => el.classList.add('active'), 10);
+                if(el) {
+                    el.style.display = 'flex';
+                    // സ്ക്രീൻ കൃത്യമായി വരാൻ ചെറിയൊരു സമയം നൽകുന്നു
+                    setTimeout(() => el.classList.add('active'), 50); 
+                }
             };
 
             if (hash === '#/') {
